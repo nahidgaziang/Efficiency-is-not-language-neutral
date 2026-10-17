@@ -5,5 +5,10 @@ authors:
   - family-names: Gazi
     given-names: Nahid
     orcid: "https://orcid.org/0009-0006-1661-9985"
+    affiliation: "Department of Computer Science and Engineering, Shahjalal University of Science and Technology, Sylhet, Bangladesh"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23434744
+    description: "Zenodo concept DOI (all versions)"
 repository-code: "https://github.com/nahidgaziang/Efficiency-is-not-language-neutral"
 type: software

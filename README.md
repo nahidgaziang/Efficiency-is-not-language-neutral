@@ -3,7 +3,11 @@
 Code for the study *Efficiency is not language-neutral: auditing compression, approximate search and similarity
 thresholds in multilingual dense retrieval*.
 
-Author: Nahid Gazi ([ORCID 0009-0006-1661-9985](https://orcid.org/0009-0006-1661-9985))
+Author: Nahid Gazi ([ORCID 0009-0006-1661-9985](https://orcid.org/0009-0006-1661-9985)), Department of Computer Science
+and Engineering, Shahjalal University of Science and Technology, Sylhet, Bangladesh
+
+Archived release: [10.5281/zenodo.23434745](https://doi.org/10.5281/zenodo.23434745) (v1.0.0); all versions:
+[10.5281/zenodo.23434744](https://doi.org/10.5281/zenodo.23434744).
 
 The code measures how vector compression (product, scalar, binary, rotation-based and residual quantization; PCA and
 Matryoshka truncation), approximate nearest-neighbor search (HNSW, IVF) and global similarity thresholds distribute
