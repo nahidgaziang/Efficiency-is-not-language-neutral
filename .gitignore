@@ -1,0 +1,8 @@
+DATA/
+RESULTS/
+KAGGLE/inputs/
+KAGGLE/inputs_taskB/
+KAGGLE/scale_inputs/
+*.zip
+__pycache__/
+*.pyc

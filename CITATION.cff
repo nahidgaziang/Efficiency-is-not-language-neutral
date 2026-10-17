@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Efficiency is not language-neutral: code for auditing compression, approximate search and similarity thresholds in multilingual dense retrieval"
+authors:
+  - family-names: Gazi
+    given-names: Nahid
+    orcid: "https://orcid.org/0009-0006-1661-9985"
+repository-code: "https://github.com/nahidgaziang/Efficiency-is-not-language-neutral"
+type: software
