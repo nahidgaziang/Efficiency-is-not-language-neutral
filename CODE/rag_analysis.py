@@ -81,6 +81,7 @@ def matrices(df, conds, groups, qids):
         out[c] = {"correct": s.correct.to_numpy().astype(np.int8).reshape(G, n),
                   "hit": s.hit1.to_numpy().astype(float).reshape(G, n),
                   "pid": s.pid.to_numpy().reshape(G, n),
+                  "context": (s.context if "context" in s else s.pid).to_numpy().reshape(G, n),
                   "lang": s["lang"].to_numpy().reshape(G, n) if "lang" in s else None}
     return out
 
@@ -144,7 +145,7 @@ def main():
             fail(f"{tag}: {bad_c2} rows where the stored hit1 contradicts the top-1")
         bad = 0
         for c in cells_c:
-            same = M[c]["pid"] == M[ref]["pid"]
+            same = M[c]["context"] == M[ref]["context"]
             if pooled:
                 same = same & (M[c]["lang"] == M[ref]["lang"])
             bad += int((M[c]["correct"][same] != M[ref]["correct"][same]).sum())

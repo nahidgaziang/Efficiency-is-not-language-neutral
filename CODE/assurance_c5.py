@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import binom
 
-ROOT = r"D:\Study\Publications\MIssion\RESEARCH_PROJECT"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 RESULTS = os.path.join(ROOT, "RESULTS")
 EMB = os.path.join(ROOT, "DATA", "emb")
 

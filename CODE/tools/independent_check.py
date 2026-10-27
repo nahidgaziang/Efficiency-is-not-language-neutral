@@ -2,7 +2,7 @@ import os, sys, json
 import numpy as np
 import pandas as pd
 
-ROOT = r"D:\Study\Publications\MIssion\RESEARCH_PROJECT"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 
 def main():

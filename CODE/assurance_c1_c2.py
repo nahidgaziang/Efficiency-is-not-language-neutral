@@ -163,11 +163,19 @@ def run(ds, tag, exact, cells, clusters):
 
 
 def main():
+    global OUT
+    only = sys.argv[sys.argv.index("--only") + 1].split(":") if "--only" in sys.argv else None
+    if only:
+        e1 = sys.argv[sys.argv.index("--e1-tag") + 1]
+        E1_TAG[only[1]] = e1
+        OUT = os.path.join(RESULTS, "assurance", f"c1_c2_{only[1]}_{e1}")
     if os.path.exists(OUT):
         sys.exit(f"{OUT} exists (no overwriting)")
     t0 = time.time(); parts, ver = [], {}
     for ds, tags, fn in (("belebele", BEL_TAGS, belebele), ("miracl", MIR_TAGS, miracl), ("haystack", HAY_TAGS, haystack)):
         for tag in tags:
+            if only and (ds, tag) != tuple(only):
+                continue
             D, v = run(ds, tag, *fn(tag)); ver[f"{ds}/{tag}"] = {"max_abs_diff_vs_stored": v, "cells_verified": int(D.verified_against_stored.sum())}
             if not v < 1e-12:
                 sys.exit(f"{ds}/{tag}: stored C1' values not reproduced (max diff {v}); stop")

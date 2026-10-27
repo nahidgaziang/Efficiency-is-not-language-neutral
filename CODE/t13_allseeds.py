@@ -3,16 +3,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import RESULTS
 import pandas as pd
 
+TAG = sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3"
 BEL = os.path.join(RESULTS, "belebele")
-SRC = [os.path.join(BEL, t, "per_query") for t in ("bgem3", "bgem3_d5")]
-DST = os.path.join(BEL, "bgem3_allseeds")
+SRC = [os.path.join(BEL, t, "per_query") for t in (TAG, f"{TAG}_d5")]
+DST = os.path.join(BEL, f"{TAG}_allseeds")
 STORED = os.path.join(RESULTS, "robustness", "v4_20261015_5models", "e1_labels.csv")
 
 
 def main():
     a, b = (pd.read_parquet(os.path.join(s, "exact_0_0.parquet")) for s in SRC)
     a = a.sort_values(["lang", "q"]).reset_index(drop=True); b = b.sort_values(["lang", "q"]).reset_index(drop=True)
-    assert a.equals(b), "exact_0_0.parquet differs between bgem3 and bgem3_d5: stop"
+    assert a.equals(b), f"exact_0_0.parquet differs between {TAG} and {TAG}_d5: stop"
     pq = os.path.join(DST, "per_query")
     if not os.path.exists(os.path.join(DST, "COPY_DONE.json")):
         os.makedirs(pq, exist_ok=True)
@@ -33,12 +34,12 @@ def main():
     for f in names:
         fam, bud, seed = f[:-8].rsplit("_", 2)
         fam_seeds.setdefault((fam, int(bud)), set()).add(int(seed))
-    ci = os.path.join(RESULTS, "stats", "belebele_bgem3_allseeds_retention_ci.csv")
+    ci = os.path.join(RESULTS, "stats", f"belebele_{TAG}_allseeds_retention_ci.csv")
     if not os.path.exists(ci):
-        subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "stats_belebele_ci.py"), "bgem3_allseeds"],
+        subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "stats_belebele_ci.py"), f"{TAG}_allseeds"],
                        check=True, stdout=subprocess.DEVNULL)
     import robustness_checks as RC
-    E = RC.e1_eval("bgem3_allseeds")
+    E = RC.e1_eval(f"{TAG}_allseeds")
     E.to_csv(os.path.join(DST, "t13_e1_floor_lwo_abs.csv"), index=False)
     el = []
     for (t, fam, bud), g in E.groupby(["model", "family", "budget_bytes"], sort=False):
@@ -48,9 +49,9 @@ def main():
                    "floor_label": "floor-robust" if c["floor0.3"] == c["floor0.4"] == c["floor0.5"] else "floor-dependent",
                    "single_language_dependent": bool(c["leave_worst_out"] != c["floor0.3"])})
     EL = pd.DataFrame(el); EL.to_csv(os.path.join(DST, "t13_e1_labels.csv"), index=False)
-    S = pd.read_csv(STORED).query("model == 'bgem3'").set_index(["family", "budget_bytes"])
+    S = pd.read_csv(STORED).query("model == @TAG").set_index(["family", "budget_bytes"])
     ci_all = pd.read_csv(ci).set_index(["family", "budget_bytes"])
-    ci_old = pd.read_csv(os.path.join(RESULTS, "stats", "belebele_bgem3_retention_ci.csv")).set_index(["family", "budget_bytes"])
+    ci_old = pd.read_csv(os.path.join(RESULTS, "stats", f"belebele_{TAG}_retention_ci.csv")).set_index(["family", "budget_bytes"])
     rows = []
     for r in EL.itertuples():
         k = (r.family, r.budget_bytes); s = S.loc[k]

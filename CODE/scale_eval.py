@@ -10,7 +10,7 @@ from miracl_eval import metrics_from_scores
 from share_intervention import load
 
 faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
-TAG = "bgem3"
+TAG = sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3"
 OUT = os.path.join(RESULTS, "scale", TAG)
 SIZES = (40000, 100000, 300000)
 BLOCK_BYTES = 192 * 2 ** 20
@@ -155,6 +155,8 @@ def main():
                 del pv
             del PL
     if "--langs" not in sys.argv and "--max-size" not in sys.argv:
+        info["mission_threads"] = os.environ.get("MISSION_THREADS", "4 (default)")
+        json.dump(info, open(info_path, "w"), indent=1)
         expected = sum(len({min(n, 40000 + json.load(open(os.path.join(EMB, TAG, "scale", f"sample_{L}.parquet.json")))["fill"]) for n in SIZES}) * 14
                        for L in MIRACL_LANGS)
         have = len([f for f in os.listdir(os.path.join(OUT, "units")) if f.endswith(".parquet")])

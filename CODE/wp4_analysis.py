@@ -101,6 +101,12 @@ def paired(a, b, A, Bm):
 
 
 def main():
+    global OUT, PAIRS
+    if "--e1-tag" in sys.argv:
+        model, run = sys.argv[sys.argv.index("--e1-tag") + 1].split("=")
+        E1_TAG[model] = run
+        PAIRS = [p for p in PAIRS if model in p[:2]]
+        OUT = os.path.join(RESULTS, "wp4", f"analysis_belebele_{run}")
     if os.path.exists(OUT):
         sys.exit(f"{OUT} exists (no overwriting)")
     t0 = time.time()

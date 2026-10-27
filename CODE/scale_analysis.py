@@ -23,7 +23,8 @@ def pboot(d):
 
 def main():
     name = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else "analysis_A"
-    base = os.path.join(RESULTS, "scale", "bgem3"); out = os.path.join(base, name)
+    tag = sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3"
+    base = os.path.join(RESULTS, "scale", tag); out = os.path.join(base, name)
     if os.path.exists(out):
         sys.exit(f"{out} exists (no overwriting)")
     U = pd.concat([pd.read_parquet(f) for f in glob.glob(os.path.join(base, "units", "*.parquet"))], ignore_index=True)

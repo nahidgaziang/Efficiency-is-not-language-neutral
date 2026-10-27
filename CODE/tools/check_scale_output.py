@@ -18,10 +18,17 @@ def sha256(path, buf=1 << 24):
             h.update(b)
 
 
+MODEL = {"bgem3": ("BAAI/bge-m3", ""), "e5s": ("intfloat/multilingual-e5-small", "passage: ")}
+
+
 def main():
-    base = os.path.join(sys.argv[1], "scale_bgem3")
+    tag = sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3"
+    base = os.path.join(sys.argv[1], f"scale_{tag}")
     per = int(sys.argv[sys.argv.index("--per-lang") + 1]) if "--per-lang" in sys.argv else 20
     info = json.load(open(os.path.join(base, "scale_info.json"), encoding="utf-8"))
+    assert info["tag"] == tag and not info.get("local_test"), "scale_info.json is for another model or a local test"
+    dim = int(info.get("dim", 1024))
+    exp = json.load(open(os.path.join(ROOT, "KAGGLE", "inputs_scale_e5s", "expected_samples.json"))) if tag != "bgem3" else None
     counts = json.load(open(os.path.join(base, "counts.json"), encoding="utf-8"))
     langs = sorted(info["per_lang"])
     rep, bad = {"dir": base, "langs": langs}, []
@@ -46,13 +53,15 @@ def main():
             X = np.asarray(V[i:i + 50000], dtype=np.float32)
             fin = fin and bool(np.isfinite(X).all()); nrm.append(np.linalg.norm(X, axis=1))
         nrm = np.concatenate(nrm)
-        ok = {"shape": V.shape == (fill, 1024), "dtype": str(V.dtype) == "float16", "finite": fin,
+        ok = {"shape": V.shape == (fill, dim), "dtype": str(V.dtype) == "float16", "finite": fin,
               "norms": bool(nrm.min() >= 0.999 and nrm.max() <= 1.001),
               "rows": len(S) == fill, "rank": bool((S["rank"].to_numpy() == np.arange(fill)).all()),
               "lang": bool((S["lang"] == L).all()), "docid_unique": bool(S.docid.is_unique),
               "docid_sha": hashlib.sha256("\n".join(sorted(S.docid)).encode()).hexdigest() == pl["sha256_sorted_docids"],
               "disjoint_from_40k": not bool(S.docid.isin(set(sub[sub.lang == L].id)).any()),
               "counts_json": all(counts[L][k] == pl[k] for k in ("fill", "N", "corpus_lines"))}
+        if exp is not None:
+            ok["S6_same_passages_as_bgem3"] = hashlib.sha256("\n".join(S.docid.astype(str)).encode()).hexdigest() == exp[L]["sha256_rank_docids"]
         s2[L] = ok
         for k, v in ok.items():
             if not v:
@@ -64,7 +73,8 @@ def main():
     from sentence_transformers import SentenceTransformer
     import torch
     torch.set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
-    model = SentenceTransformer("BAAI/bge-m3", device="cpu", revision=info["revision"], local_files_only=True)
+    hf_id, prefix = MODEL[tag]
+    model = SentenceTransformer(hf_id, device="cpu", revision=info["revision"], local_files_only=True)
     model.max_seq_length = 512
     rng = np.random.default_rng(20261015)
     s5 = {}
@@ -72,7 +82,7 @@ def main():
         V = np.load(os.path.join(base, f"vec_{L}.npy"), mmap_mode="r")
         S = pd.read_parquet(os.path.join(base, f"sample_{L}.parquet"))
         idx = np.sort(rng.choice(len(S), size=min(per, len(S)), replace=False))
-        texts = [(t + " " + x).strip() if isinstance(t, str) and t else x for t, x in zip(S.title.iloc[idx], S.text.iloc[idx])]
+        texts = [prefix + ((t + " " + x).strip() if isinstance(t, str) and t else x) for t, x in zip(S.title.iloc[idx], S.text.iloc[idx])]
         E = model.encode(texts, batch_size=8, normalize_embeddings=True, convert_to_numpy=True)
         K = np.asarray(V[idx], dtype=np.float32)
         cos = (E * K).sum(1) / np.linalg.norm(K, axis=1)
@@ -84,7 +94,7 @@ def main():
     rep["S5_min_cos"] = float(min(v["min_cos"] for v in s5.values()))
     rep["problems"] = bad; rep["pass"] = not bad; rep["seconds"] = round(time.time() - t0)
     os.makedirs(os.path.join(RESULTS, "integrity"), exist_ok=True)
-    out = os.path.join(RESULTS, "integrity", "kaggle_scale_bgem3.json")
+    out = os.path.join(RESULTS, "integrity", f"kaggle_scale_{tag}.json")
     if os.path.exists(out):
         sys.exit(f"{out} exists (no overwriting)")
     json.dump(rep, open(out, "w"), indent=1)

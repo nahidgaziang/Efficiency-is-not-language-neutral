@@ -50,6 +50,8 @@ MODELS = {
                     "Instruct: Retrieval the relevant passage for the given query\nQuery:", "", {}, 512, 16),
     "arcticl2": ("Snowflake/snowflake-arctic-embed-l-v2.0", "query: ", "",
                  {"revision": "ac6544c8a46e00af67e330e85a9028c66b8cfd9a", "local_files_only": True}, 512, 64),
+    "qwen3e_ep_nt": ("Qwen/Qwen3-Embedding-0.6B",
+                     "Instruct: Retrieval the relevant passage for the given query\nQuery:", "", {}, 3072, 16),
 }
 
 QUERY_PROMPTS = {"qwen3e_ep": {"miracl40k": "Instruct: Retrieval relevant passage for the given query\nQuery:",
@@ -58,7 +60,8 @@ QUERY_PROMPTS = {"qwen3e_ep": {"miracl40k": "Instruct: Retrieval relevant passag
 
 MRL_MODELS = {"gte": (128, 256, 512), "qwen3e": (128, 256, 512), "qwen3e4b": (128, 256, 512, 1024),
               "qwen3e_ep": (128, 256, 512), "qwen3e4b_ep": (128, 256, 512, 1024),
-              "arcticl2": (256,), "egemma": (128, 256, 512), "jinav5": (32, 64, 128, 256, 512, 768)}
+              "arcticl2": (256,), "egemma": (128, 256, 512), "jinav5": (32, 64, 128, 256, 512, 768),
+              "qwen3e_ep_nt": (128, 256, 512)}
 
 CROSS_SCRIPT = {"ben_Latn": "ben_Beng", "hin_Latn": "hin_Deva", "urd_Latn": "urd_Arab", "npi_Latn": "npi_Deva"}
 

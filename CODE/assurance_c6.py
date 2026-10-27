@@ -2,7 +2,7 @@ import os, sys, json, time, glob, shutil
 import numpy as np
 import pandas as pd
 
-ROOT = r"D:\Study\Publications\MIssion\RESEARCH_PROJECT"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CODE = os.path.join(ROOT, "CODE")
 RESULTS = os.path.join(ROOT, "RESULTS")
 TEMP_BASE = os.path.join(RESULTS, "assurance", "c6_reruns")

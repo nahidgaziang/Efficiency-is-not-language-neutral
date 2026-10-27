@@ -26,7 +26,8 @@ def pboot(d):
 
 def main():
     name = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else "analysis_B"
-    base = os.path.join(RESULTS, "scale", "bgem3"); out = os.path.join(base, name)
+    tag = sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3"
+    base = os.path.join(RESULTS, "scale", tag); out = os.path.join(base, name)
     if os.path.exists(out):
         sys.exit(f"{out} exists (no overwriting)")
     files = sorted(glob.glob(os.path.join(base, "taskB_kaggle", "units", "*.parquet")))
@@ -38,7 +39,7 @@ def main():
     ref_keys = U[(U.level == "720k") & (U.method == "exact")][["lang", "qid"]].reset_index(drop=True)
     for (lev, m), g in U.groupby(["level", "method"]):
         assert g[["lang", "qid"]].reset_index(drop=True).equals(ref_keys), f"query set differs: {lev} {m}"
-    e2 = pd.read_parquet(os.path.join(RESULTS, "miracl", "bgem3", "per_query_B.parquet"))
+    e2 = pd.read_parquet(os.path.join(RESULTS, "miracl", tag, "per_query_B.parquet"))
     e2k = e2.set_index(["lang", "qid", "method"])
     ex = U[(U.level == "720k") & (U.method == "exact")].set_index(["lang", "qid"])
     ref = e2[e2.method == "exact"].set_index(["lang", "qid"]).reindex(ex.index)

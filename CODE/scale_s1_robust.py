@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.stats import chi2
 
 B, SEED, NNULL = 2000, 20261015, 10000
-BASE = os.path.join(RESULTS, "scale", "bgem3")
+BASE = os.path.join(RESULTS, "scale", sys.argv[sys.argv.index("--tag") + 1] if "--tag" in sys.argv else "bgem3")
 OUT = os.path.join(BASE, "robust_S1")
 
 
