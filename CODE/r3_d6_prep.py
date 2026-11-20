@@ -21,8 +21,8 @@ def main():
     part = sys.argv[sys.argv.index("--part") + 1]
     langs = sys.argv[sys.argv.index("--langs") + 1].split(",") if "--langs" in sys.argv else MIRACL_LANGS
     want = "4" if part == "hnsw" else ("12" if tag == "e5s" else "4")
-    if os.environ.get("MISSION_THREADS") != want:
-        sys.exit(f"MISSION_THREADS must be {want} for {tag} --part {part}")
+    if os.environ.get("AUDIT_THREADS") != want:
+        sys.exit(f"AUDIT_THREADS must be {want} for {tag} --part {part}")
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else os.path.join(RESULTS, "r3", "d6")
     os.makedirs(out, exist_ok=True)
     f_out = os.path.join(out, f"top5_{tag}_{part}.parquet")

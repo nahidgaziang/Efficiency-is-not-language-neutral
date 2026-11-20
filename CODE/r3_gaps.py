@@ -32,8 +32,8 @@ def margin32(g):
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (the stored margins were computed at 4 threads)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (the stored margins were computed at 4 threads)")
     tb, tag = sys.argv[1], sys.argv[2]
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     only = arg("--groups", "")

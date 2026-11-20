@@ -6,7 +6,7 @@ import pandas as pd
 import faiss
 import compressors as C
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 KS, B = (10, 40, 100), 1000
 
 
@@ -17,7 +17,7 @@ def reference(tag, fam, bud):
     for sub in (tag + "_threads4", tag):
         f = os.path.join(RESULTS, "null", sub, "per_query.parquet")
         ri = os.path.join(RESULTS, "null", sub, "run_info.json")
-        if os.path.exists(f) and os.path.exists(ri) and str(json.load(open(ri)).get("mission_threads")) == "4":
+        if os.path.exists(f) and os.path.exists(ri) and str(json.load(open(ri)).get("audit_threads")) == "4":
             pq = pd.read_parquet(f)
             g = pq[(pq.series == "M") & (pq.family == fam) & (pq.budget_bytes == bud)]
             if len(g):
@@ -106,7 +106,7 @@ def main():
                         else "re-ranking removes the disparity"})
     S = S.merge(pd.DataFrame(dec), on=["family", "budget_bytes"])
     S.to_csv(os.path.join(out, "summary.csv"), index=False)
-    json.dump({"tag": tag, "mission_threads": os.environ.get("MISSION_THREADS", "10 (default)"), "checks": checks,
+    json.dump({"tag": tag, "audit_threads": os.environ.get("AUDIT_THREADS", "10 (default)"), "checks": checks,
                "n_elig": len(elig), "seconds": round(time.time() - t0), "status": "complete"},
               open(os.path.join(out, "run_info.json"), "w"), indent=1)
     pd.set_option("display.width", 250)

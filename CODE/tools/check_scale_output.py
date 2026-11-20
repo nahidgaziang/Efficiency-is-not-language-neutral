@@ -72,7 +72,7 @@ def main():
         bad.append(f"S4 total fill {total} != 4258232")
     from sentence_transformers import SentenceTransformer
     import torch
-    torch.set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+    torch.set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
     hf_id, prefix = MODEL[tag]
     model = SentenceTransformer(hf_id, device="cpu", revision=info["revision"], local_files_only=True)
     model.max_seq_length = 512

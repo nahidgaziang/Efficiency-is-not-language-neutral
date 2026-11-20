@@ -39,7 +39,7 @@ def _opq_train_checkpointed(train, m, ckpt, niter=None):
     proto = faiss.OPQMatrix(d, m)
     niter = proto.niter if niter is None else int(niter)
     meta = json.dumps({"d": int(d), "m": int(m), "niter": niter, "niter_pq_0": int(proto.niter_pq_0),
-                       "niter_pq": int(proto.niter_pq), "threads": os.environ.get("MISSION_THREADS", "10 (default)"),
+                       "niter_pq": int(proto.niter_pq), "threads": os.environ.get("AUDIT_THREADS", "10 (default)"),
                        "faiss": faiss.__version__, "train_sha256": hashlib.sha256(train.tobytes()).hexdigest()},
                       sort_keys=True)
     A, C0, k0 = None, None, 0

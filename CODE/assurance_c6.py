@@ -8,7 +8,7 @@ RESULTS = os.path.join(ROOT, "RESULTS")
 TEMP_BASE = os.path.join(RESULTS, "assurance", "c6_reruns")
 
 sys.path.insert(0, CODE)
-os.environ["MISSION_THREADS"] = "4"
+os.environ["AUDIT_THREADS"] = "4"
 os.environ["OMP_NUM_THREADS"] = "4"
 
 

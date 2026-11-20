@@ -1,7 +1,7 @@
 import os, sys, json
 sys.path.insert(0, os.path.dirname(__file__))
 from common import ROOT, EMB, RESULTS
-os.environ.setdefault("RAYON_NUM_THREADS", os.environ.get("MISSION_THREADS", "2"))
+os.environ.setdefault("RAYON_NUM_THREADS", os.environ.get("AUDIT_THREADS", "2"))
 import numpy as np
 import pandas as pd
 from datasets import load_dataset, get_dataset_config_names

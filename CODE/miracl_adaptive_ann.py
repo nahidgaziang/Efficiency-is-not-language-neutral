@@ -6,7 +6,7 @@ import pandas as pd
 import faiss
 from miracl_eval import load
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 
 
 def ndcg_rows(I, qkeys, p_id, qrels):

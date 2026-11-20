@@ -13,8 +13,8 @@ KS = (10, 40, 100, 1000)
 def main():
     tag = sys.argv[1]
     want = "12" if tag == "e5s" else "4"
-    if os.environ.get("MISSION_THREADS") != want:
-        sys.exit(f"MISSION_THREADS must be {want} for {tag} (E2's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != want:
+        sys.exit(f"AUDIT_THREADS must be {want} for {tag} (E2's fits depend on the thread count)")
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     tasks = arg("--tasks", "rv2,rv5a,rv5b").split(",")
     langs = arg("--langs", ",".join(MIRACL_LANGS)).split(",")

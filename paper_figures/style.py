@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROJ = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+PROJ = os.path.abspath(os.path.join(HERE, ".."))
 RESULTS = os.path.join(PROJ, "RESULTS")
-FIGDIR = os.path.join(HERE, "..", "figures")
-PNGDIR = os.path.join(HERE, "..", "..", "analysis", "_figpng")
+FIGDIR = os.path.join(PROJ, "paper_output", "figures")
+PNGDIR = os.path.join(PROJ, "paper_output", "figure_png")
 FONTDIR = os.path.join(HERE, "fonts")
 
 BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"

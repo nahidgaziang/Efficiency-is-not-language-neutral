@@ -9,7 +9,7 @@ from miracl_eval import metrics_from_scores
 from share_intervention import load
 from turboquant import TurboQuantMSE, haar_rotation
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 SEEDS = (0, 1, 2)
 
 

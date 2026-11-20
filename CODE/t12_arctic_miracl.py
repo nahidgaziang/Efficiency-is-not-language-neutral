@@ -51,7 +51,7 @@ def part1():
     df = pd.DataFrame(rows, columns=["lang", "qid", "method", "ndcg10", "r100"])
     df.to_parquet(NATIVE + ".tmp"); os.replace(NATIVE + ".tmp", NATIVE)
     json.dump({"verification_max_abs_diff_exact_mrl256": worst, "rows": len(df), "seconds": round(time.time() - t0),
-               "threads": os.environ.get("MISSION_THREADS"), "time": time.strftime("%Y-%m-%d %H:%M:%S")},
+               "threads": os.environ.get("AUDIT_THREADS"), "time": time.strftime("%Y-%m-%d %H:%M:%S")},
               open(os.path.join(D, "native_info.json"), "w"), indent=1)
 
 

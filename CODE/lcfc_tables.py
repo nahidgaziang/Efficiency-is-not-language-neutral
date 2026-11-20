@@ -8,7 +8,7 @@ import faiss
 import compressors as C
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 SMOKE = "--smoke" in sys.argv
 OUT = os.path.join(RESULTS, "lcfc_smoke" if SMOKE else "lcfc")
 RTOP = 100
@@ -106,7 +106,7 @@ def get_stage(ds, tag, stage, P):
         else:
             np.save(os.path.join(fdir, "mu_g.tmp.npy"), T.mean(0)); os.replace(os.path.join(fdir, "mu_g.tmp.npy"), os.path.join(fdir, "mu_g.npy"))
         save_json(os.path.join(fdir, f"{stage}_fit_info.json"),
-                  {"threads": os.environ.get("MISSION_THREADS", "default"), "seconds": round(time.time() - t0),
+                  {"threads": os.environ.get("AUDIT_THREADS", "default"), "seconds": round(time.time() - t0),
                    "time": time.strftime("%Y-%m-%d %H:%M:%S")})
         log(f"fitted {ds}/{tag}/{stage} ({time.time() - t0:.0f}s)")
     if name:
@@ -199,7 +199,7 @@ def rerank(ds, tag, stage):
             res[key] = {"reference": f"per_query_A {meth}.{col}", "max_abs_diff": dm, "gate": True}
     ok = all(v["max_abs_diff"] < 1e-12 for v in res.values() if v["gate"])
     info = {"ds": ds, "tag": tag, "stage": stage, "groups": len(groups), "seconds": round(time.time() - t0),
-            "mission_threads": os.environ.get("MISSION_THREADS", "4"), "verification": res, "pass": ok}
+            "audit_threads": os.environ.get("AUDIT_THREADS", "4"), "verification": res, "pass": ok}
     save_json(os.path.join(udir, "verification.json"), info)
     log(f"V-L1/V-L2: {json.dumps(res)}")
     if not ok:

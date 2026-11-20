@@ -1,7 +1,7 @@
 import os, sys, json, time, glob
 
 os.environ["OMP_NUM_THREADS"] = "4"
-os.environ["MISSION_THREADS"] = "4"
+os.environ["AUDIT_THREADS"] = "4"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))

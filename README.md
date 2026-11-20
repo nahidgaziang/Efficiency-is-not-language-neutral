@@ -1,7 +1,7 @@
 # Efficiency Is Not Language-Neutral
 
-Code for the study *Efficiency Is Not Language-Neutral: Auditing and Calibrating Compression, Approximate Search, and
-Similarity Thresholds in Multilingual Dense Retrieval*.
+Code for the study *Efficiency Is Not Language-Neutral: Per-Language Auditing and Calibration of Multilingual Dense
+Retrieval* (manuscript submitted to ACM Transactions on Information Systems).
 
 Author: Nahid Gazi ([ORCID 0009-0006-1661-9985](https://orcid.org/0009-0006-1661-9985)), Department of Computer Science
 and Engineering, Shahjalal University of Science and Technology, Sylhet, Bangladesh
@@ -21,6 +21,21 @@ scale test for a second model, two commercial embedding APIs, five vector databa
 calibration with predicted languages (GlotLID), a second RAG reader with three-passage contexts, the validation of
 MIRAGE-Bench's scoring for generated answers, and the scripts that compute every number, table and figure of the paper.
 
+Version 1.2.0 adds the price of language neutrality: the memory a single budget needs to serve every language, relative
+to the budget at which the mean meets the same target, and the memory of budgets sized to each language. Three scripts
+rebuild the Belebele layers of all eight models, check every rebuilt layer against the stored results, and run the
+registered tests of the price analysis (stage 14). The ledger and a new figure script report its numbers. The
+environment variable that sets the thread count is now `AUDIT_THREADS` (`MISSION_THREADS` up to v1.1.0), and the Kaggle
+input datasets are named `audit-*` instead of `mission-*`; the scripts are otherwise unchanged. See `CHANGELOG.md`.
+
+Version 1.3.0 adds the fourth round of analyses (stage 15): the price of language neutrality on extended budget grids
+(TurboQuant-style codes at 1 to 6 and 8 bits, PQ up to d/2 bytes), where it is exact wherever every language reaches the
+target within the grid; certified per-language budgets on Belebele, MIRACL and the haystacks; one pooled index with
+per-language budgets; and a transfer probe that maps romanized embeddings toward their native script with maps fitted
+on the Dakshina dataset, after screening its text against every test bed. The ledger, two new table and figure scripts,
+and the updated figure scripts report its numbers. Version 1.2.0 was not released separately; its changes are part of
+1.3.0.
+
 ## Repository layout
 
 | Path | Content |
@@ -28,11 +43,12 @@ MIRAGE-Bench's scoring for generated answers, and the scripts that compute every
 | `CODE/` | data preparation, embedding, evaluation and analysis scripts |
 | `CODE/tools/` | input export, file validation, independent checks |
 | `KAGGLE/` | scripts that ran on Kaggle (2 x NVIDIA T4) |
-| `MANUSCRIPT/analysis/` | the results ledger: every number of the paper, computed from `RESULTS/` |
-| `MANUSCRIPT/paper/figure_scripts/` | tables and figures of the paper |
+| `paper_numbers/` | the results ledger: every number of the paper, computed from `RESULTS/` |
+| `paper_figures/` | tables and figures of the paper |
+| `paper_output/` | created at run time: the ledger, LaTeX tables and macros, and figures (not in the repository) |
 | `EXPERIMENTS/diagnostics/` | two diagnostics of the generated-answer study |
 | `DATA/` | created at run time: datasets, embeddings, reference files (not in the repository) |
-| `RESULTS/` | created at run time: all outputs (not in the repository) |
+| `RESULTS/` | created at run time: all outputs, including the price analysis in `RESULTS/poln/` and the fourth round in `RESULTS/r4/` (not in the repository) |
 
 Scripts locate `DATA/` and `RESULTS/` relative to the repository root. Most scripts refuse to overwrite an existing
 output folder.
@@ -50,7 +66,7 @@ output folder.
   other dependencies and provide `vllm` as an import-only stub (the diagnostic does not call it).
 - Figures use the Linux Biolinum O font. Copy `LinBiolinum_R.otf`, `LinBiolinum_RB.otf` and `LinBiolinum_RI.otf`
   (SIL Open Font License; part of the `libertine` TeX package, e.g. `kpsewhich LinBiolinum_R.otf`) into
-  `MANUSCRIPT/paper/figure_scripts/fonts/`.
+  `paper_figures/fonts/`.
 
 ```
 pip install -r requirements.txt
@@ -59,20 +75,20 @@ pip install -r requirements.txt
 ## Determinism
 
 - `CODE/common.py` sets `OMP_NUM_THREADS`, `MKL_NUM_THREADS`, `OPENBLAS_NUM_THREADS` and `NUMEXPR_NUM_THREADS` from
-  `MISSION_THREADS` only if they are unset, and only when it is imported before numpy. Run every script in a fresh
-  process with these four variables unset and `MISSION_THREADS` set. `CODE/tools/run_measured.py` does this and also
+  `AUDIT_THREADS` (named `MISSION_THREADS` up to v1.1.0) only if they are unset, and only when it is imported before numpy. Run every script in a fresh
+  process with these four variables unset and `AUDIT_THREADS` set. `CODE/tools/run_measured.py` does this and also
   records wall time and peak memory:
   ```
   python CODE/tools/run_measured.py <log file> -- python CODE/<script>.py <args>
   ```
   `run_measured.py` runs the command with `CODE/` as the working directory, so directory arguments should be absolute
   paths.
-- PQ, OPQ, PCA and k-means fits depend on the BLAS thread count. All reported results used `MISSION_THREADS=4`, except
+- PQ, OPQ, PCA and k-means fits depend on the BLAS thread count. All reported results used `AUDIT_THREADS=4`, except
   the MIRACL steps of multilingual-e5-small, which used 12 threads: `miracl_eval.py e5s`, the LCFC MIRACL first stages
   (`lcfc_tables.py fit miracl e5s <stage>`), `rv_miracl.py e5s`, `rv5_ivfpq.py e5s`, `r3_miracl.py e5s` and
   `r3_d6_prep.py e5s --part e2|alloc`. `rv_belebele.py`, `rv_haystack.py`, `rv_miracl.py`, `rv5_belebele_pq.py`,
-  `rv5_ivfpq.py`, `r3_gaps.py`, `r3_ers.py`, `r3_haystack.py`, `r3_miracl.py`, `r3_d6_prep.py`, `r3_d7_prep.py` and
-  `a1_eval.py` stop unless `MISSION_THREADS` has the value used for the reported results.
+  `rv5_ivfpq.py`, `r3_gaps.py`, `r3_ers.py`, `r3_haystack.py`, `r3_miracl.py`, `r3_d6_prep.py`, `r3_d7_prep.py`,
+  `a1_eval.py` and `poln_export_belebele.py` stop unless `AUDIT_THREADS` has the value used for the reported results.
 - The evaluation scripts of stages 11 and 12 first check the layers they share with earlier stages against the stored
   per-query results (maximum difference 1e-9) and stop on a mismatch.
 - HNSW graphs built with several threads are not bit-identical between builds; HNSW results are reproducible in
@@ -92,6 +108,7 @@ pip install -r requirements.txt
 | MIRAGE-Bench released outputs | `nthakur/mirage-bench-output`, revision `025145142be936d525ef7f655c32dc32b08ea0e5`, files `<lang>/dev-00000-of-00001.parquet` | saved unchanged under `DATA/external/mirage_bench_output_025145142be/<lang>/`; `KAGGLE/d6_score.py` downloads its own copy |
 | Resource classes | see the table below | saved unchanged in `DATA/external/r3_5_resource_classes/`; `CODE/tools/joshi_classes.py` writes `belebele_classes.csv` there |
 | MTEB reference results | `embeddings-benchmark/results` on GitHub | downloaded by `CODE/tools/a1_mteb_check.py` |
+| Dakshina v1.0 (Roark et al., LREC 2020; CC BY-SA 4.0), romanized Wikipedia sentences in Bengali, Hindi, Sinhala and Urdu | `dakshina_dataset_v1.0.tar`, 2,008,340,480 bytes, SHA-256 `83530BEC211893D9DF429298F42E63C350C25AD56F9F5172F85EDB0575EE5B03` | `CODE/r4_dakshina_download.py` (URL in the script; writes `DATA/external/r4_dakshina/PROVENANCE.md`), then `CODE/r4_data.py` and `CODE/r4_exclude.py` |
 
 | Resource-class file | URL | SHA-256 |
 |---|---|---|
@@ -185,6 +202,13 @@ Output folders and run records use these names.
 | D6 | generated answers scored with MIRAGE-Bench, behind a validation gate |
 | D7 | second reader family and three-passage contexts for E6 |
 | J-a to J-e | inputs computed for the items above: haystack codebook arms and distractor dose, MIRACL top-1 fidelity, exact top-10 margins and top-2 gaps |
+| PoLN (H0-H6) | price of language neutrality on the original grids (stage 14) |
+| R4-P1 | price of language neutrality on the extended grids, as an interval (exact where no language lies beyond the grid) |
+| R4-P2 / R4-P3 | per-language budgets on Belebele: plug-in (descriptive) / certified with Learn-then-Test (decision) |
+| R4-P4 | one pooled Belebele index with per-language budgets (descriptive) |
+| R4-P5 | certified per-language budgets on MIRACL and the haystacks |
+| R4-M0 | Dakshina transfer pairs and their screening against the test beds |
+| R4-M1a | transfer probe: ridge map from romanized to native-script embeddings, with Procrustes and wrong-language controls |
 
 Labels such as `EXPERIMENT_PLAN §26 A2` in output files and in the ledger's `source` column name the section of the
 time-stamped analysis plan under which an analysis was registered (see the paper's section on the analysis plan). The
@@ -192,7 +216,7 @@ plan itself is not part of this repository.
 
 ## Reproduction
 
-Commands are run from the repository root with `MISSION_THREADS=4` unless stated (the `MISSION_THREADS=12` prefix
+Commands are run from the repository root with `AUDIT_THREADS=4` unless stated (the `AUDIT_THREADS=12` prefix
 below is POSIX shell syntax; on Windows set the variable before the command). Steps within a stage can run in any order
 once their inputs exist; every step reads only files written by earlier steps.
 
@@ -299,7 +323,7 @@ python CODE/gap_audit.py --tags e5s,minilm,bgem3,qwen3e_ep,qwen3e4b_ep --out v3_
 ### 3. MIRACL
 
 ```
-MISSION_THREADS=12 python CODE/miracl_eval.py e5s
+AUDIT_THREADS=12 python CODE/miracl_eval.py e5s
 python CODE/miracl_eval.py e5s --pooled-only
 python CODE/miracl_eval.py e5s --seed 1
 python CODE/tools/compare_seeds.py e5s
@@ -442,7 +466,7 @@ python CODE/rag_analysis.py --out e6_pooled_20261016 --pooled
 Tables, for every combination of dataset `belebele | miracl | haystack`, model `e5s | bgem3 | qwen3e_ep` and first
 stage `pq16 | opq16 | pq32 | pca64 | bin_gc`, plus Belebele `qwen3e4b_ep` without `opq16`:
 ```
-MISSION_THREADS=12 python CODE/lcfc_tables.py fit miracl e5s <stage>
+AUDIT_THREADS=12 python CODE/lcfc_tables.py fit miracl e5s <stage>
 python CODE/lcfc_tables.py rerank <dataset> <tag> <stage>
 python CODE/lcfc_tables.py pooled <miracl|haystack> <tag> exact
 python CODE/lcfc_tables.py pooled <miracl|haystack> <tag> ivf
@@ -518,9 +542,9 @@ python CODE/rv5_belebele_pq.py <tag>
 python CODE/rv_belebele.py <tag>
 python CODE/rv_belebele.py <tag> --layers <d/8 and d/4 layers>
 python CODE/rv_haystack.py <tag>
-MISSION_THREADS=12 python CODE/rv_miracl.py e5s
+AUDIT_THREADS=12 python CODE/rv_miracl.py e5s
 python CODE/rv_miracl.py <tag>
-MISSION_THREADS=12 python CODE/rv5_ivfpq.py e5s
+AUDIT_THREADS=12 python CODE/rv5_ivfpq.py e5s
 python CODE/rv5_ivfpq.py bgem3
 python CODE/rv1_analysis.py
 python CODE/rv2_analysis.py
@@ -545,7 +569,7 @@ python CODE/r3_ers.py belebele <tag>
 python CODE/r3_ers.py haystack <tag>
 python CODE/r3_haystack.py <tag> --task arms
 python CODE/r3_haystack.py <tag> --task dose
-MISSION_THREADS=12 python CODE/r3_miracl.py e5s
+AUDIT_THREADS=12 python CODE/r3_miracl.py e5s
 python CODE/r3_miracl.py <tag>
 python CODE/tools/joshi_classes.py
 
@@ -622,9 +646,9 @@ python CODE/tools/d6_query_list.py
 python CODE/r3_d6_prep.py bgem3 --part e2
 python CODE/r3_d6_prep.py bgem3 --part hnsw
 python CODE/r3_d6_prep.py bgem3 --part alloc
-MISSION_THREADS=12 python CODE/r3_d6_prep.py e5s --part e2
+AUDIT_THREADS=12 python CODE/r3_d6_prep.py e5s --part e2
 python CODE/r3_d6_prep.py e5s --part hnsw
-MISSION_THREADS=12 python CODE/r3_d6_prep.py e5s --part alloc
+AUDIT_THREADS=12 python CODE/r3_d6_prep.py e5s --part alloc
 python CODE/tools/export_d6_inputs.py
 ```
 `d6_query_list.py` writes the query set to `EXPERIMENTS/d6_queries.csv`. Attach `KAGGLE/inputs_d6/` and run
@@ -647,26 +671,127 @@ python EXPERIMENTS/diagnostics/d6_judge_rerun_20261025/d6_judge_selfagreement.py
 (`d6score/gate.json`) passed. In the reported run the gate did not pass, so the study ends with the gate and the two
 diagnostics.
 
-### 14. Numbers, tables and figures of the paper
+### 14. Price of language neutrality
+
+The export rebuilds, for each model, the Belebele layers of four families (PQ, residual-scaled PQ, PCA and
+TurboQuant-style codes) from the stored embeddings, with the training samples, seeds and fits of the earlier stages. It
+checks every rebuilt layer against the stored per-query R@1 (maximum difference 1e-9) and stops on a mismatch. It
+writes label-free fidelity losses per query (1 minus the probability that the top-1 result equals the exact top-1),
+the exact margin between the top-1 and top-2 scores, and the loss of matched isotropic noise (Null A) on a grid of noise
+scales.
 
 ```
-python MANUSCRIPT/analysis/ledger.py
-python MANUSCRIPT/paper/figure_scripts/tables.py
-python MANUSCRIPT/paper/figure_scripts/tables_r3.py
-python MANUSCRIPT/paper/figure_scripts/fig_e1.py
-python MANUSCRIPT/paper/figure_scripts/fig_e1_dist.py
-python MANUSCRIPT/paper/figure_scripts/fig_family.py
-python MANUSCRIPT/paper/figure_scripts/fig_scale.py
-python MANUSCRIPT/paper/figure_scripts/fig_a2.py
-python MANUSCRIPT/paper/figure_scripts/fig_m7.py
-python MANUSCRIPT/paper/figure_scripts/fig_rerank.py
-python MANUSCRIPT/paper/figure_scripts/fig_thresholds.py
-python MANUSCRIPT/paper/figure_scripts/fig_e6.py
-python MANUSCRIPT/paper/figure_scripts/fig_lcfc.py
+for t in minilm e5s bgem3 qwen3e_ep qwen3e4b_ep arcticl2 egemma jinav5; do
+  python CODE/poln_export_belebele.py $t --out RESULTS/poln/inputs --families pq,pq_rscale,pca,tq
+done
+python CODE/poln_merge.py RESULTS/poln/inputs
+python CODE/poln_tests.py --per-query RESULTS/poln/inputs/per_query.parquet --margins RESULTS/poln/inputs/margins.parquet \
+  --nulla-grid RESULTS/poln/inputs/nulla_grid.csv --lcfc RESULTS/lcfc/report/cell_settings.csv --lcfc-groups knob,ds \
+  --out RESULTS/poln/impute1 --boot 1000 --cluster-boot
+python CODE/poln_tests.py --per-query RESULTS/poln/inputs/per_query.parquet --margins RESULTS/poln/inputs/margins.parquet \
+  --nulla-grid RESULTS/poln/inputs/nulla_grid.csv --lcfc RESULTS/lcfc/report/cell_settings.csv --lcfc-groups knob,ds \
+  --out RESULTS/poln/impute2 --boot 1000 --impute 2
 ```
 
-`ledger.py` (with `ledger_r3.py`) computes every number of the paper from `RESULTS/`, the two diagnostics, a few
-`DATA/` info files and the haystack constants of `CODE/build_haystack.py`, and writes `MANUSCRIPT/results_ledger.csv` (value, rounding, source file and claim of each number)
-and `MANUSCRIPT/paper/generated/results.tex` (one LaTeX macro per number). The table scripts write LaTeX tables to
-`MANUSCRIPT/paper/generated/`; the figure scripts write PDF figures to `MANUSCRIPT/paper/figures/` and PNG previews to
-`MANUSCRIPT/analysis/_figpng/`.
+`poln_tests.py` computes, per model, layer family and target (top-1 fidelity 0.90 and 0.95), the budget each language
+needs, the mean-tuned budget, the uniform budget (the largest requirement) and the allocated budget (the mean
+requirement), their ratios to the mean-tuned budget, and the registered decisions H0 to H6. A language that stays below
+the target within the budget grid is set to the largest budget, which makes the prices lower bounds (`impute1`); the
+sensitivity analysis sets it to twice that budget (`impute2`). Each output folder holds `decisions.json` and
+`decisions.md`, the per-cell table `cells_h1_h4.csv`, the Null A check `h0_languages.csv`, the growth with the number
+of languages `h5_growth.csv` and the compute comparison `h6_compute.csv`.
+
+Input columns of `poln_tests.py`, as written by the export: `per_query` has model, testbed, layer, kind (`layer` or
+`nullA`), budget, lang, qid, cluster, seed and loss; `margins` has model, testbed, lang, qid and margin; `nulla_grid`
+has model, testbed, lang, sigma, loss and N.
+
+### 15. Extended grids, certified per-language budgets and the transfer probe
+
+Every script of this stage first checks the stored results it extends and stops on a mismatch: refitted layers must
+reproduce the stored per-query results (maximum difference 1e-9), and the certified-budget analysis must reproduce
+every row of the byte-budget calibration of stage 12 (R3-6). Units are written atomically and skipped on restart, and a
+finished output is never overwritten. Above 5 bits, `CODE/r4_common.py` iterates the Lloyd-Max update of the
+TurboQuant-style quantizer to convergence; codes of up to 5 bits are those of `CODE/turboquant.py`.
+
+Price on the extended grids, certified budgets and the pooled index (CPU):
+
+```
+python CODE/r4_tq_gate.py
+python CODE/r4_tq_gate.py --converged
+for t in minilm e5s bgem3 qwen3e_ep qwen3e4b_ep arcticl2 egemma jinav5; do
+  python CODE/r4_grid_belebele.py $t
+  python CODE/r4_p4.py $t
+done
+python CODE/r4_p4.py --summary
+python CODE/r4_p1_price.py
+python CODE/r4_p23.py
+for t in e5s bgem3 qwen3e_ep arcticl2; do python CODE/r4_p5_units.py miracl $t; done
+for t in e5s bgem3 qwen3e_ep; do python CODE/r4_p5_units.py haystack $t; done
+python CODE/r4_p5.py
+```
+
+- `r4_tq_gate.py` checks the quantizer's distortion against the Lloyd-Max values at 1 to 8 bits.
+- `r4_grid_belebele.py` writes per-query units for TurboQuant-style codes at 1 to 6 and 8 bits and PQ at 8 to 64 bytes
+  and d/8, d/4 and d/2 bytes.
+- `r4_p1_price.py` runs `CODE/poln_tests.py` unchanged on these units. It needs `RESULTS/poln/` from stage 14, and runs
+  twice per family: languages beyond the grid at the largest compressed budget (lower bound of the price) and at
+  float storage (upper bound). It writes `RESULTS/r4/p1/price_extended.csv` and `.md`.
+- `r4_p23.py` writes the plug-in (`RESULTS/r4/p2/`) and certified (`RESULTS/r4/p3/`) per-language budgets.
+- `r4_p4.py` writes the pooled-index results (`RESULTS/r4/p4/`).
+- `r4_p5_units.py` and `r4_p5.py` write the certified budgets on MIRACL and the haystacks (`RESULTS/r4/p5/`). They need
+  the MIRACL and haystack embeddings of stages 3 and 4.
+
+Transfer probe (the embedding step runs on the GPU):
+
+```
+python CODE/r4_dakshina_download.py
+python CODE/r4_data.py --stage sentences
+python CODE/r4_exclude.py --stage sentences
+python CODE/r4_data.py --stage pseudo
+python CODE/r4_exclude.py --stage pseudo
+for t in e5s bgem3; do
+  python CODE/r4_m1a_embed.py $t
+  python CODE/r4_m1a_eval.py $t
+done
+python CODE/r4_m1a_analysis.py
+for t in e5s bgem3; do python CODE/r4_m1a_haystack.py $t; done
+python CODE/r4_m1a_haystack.py --summary
+```
+
+- `r4_data.py` splits each language's sentence pairs into training and development text (10 %) and builds
+  pseudo-passages from the sentences that pass the screen. It never opens a Belebele or FLORES file.
+- `r4_exclude.py` removes every pair that equals, contains (test texts of at least three words) or shares an 8-gram of
+  words with a Belebele passage or question, a haystack paragraph of the four languages, or a MIRACL Bengali or Hindi
+  passage. It writes `DATA/r4/pairs.parquet` and `manifest.json`.
+- `r4_m1a_embed.py` embeds the pairs with the study's inference settings (`DATA/emb/<model>/r4_dakshina.npz`).
+- `r4_m1a_eval.py` fits the ridge and Procrustes maps, applies them to romanized Bengali, Hindi, Sinhala and Urdu on
+  Belebele at five mixing weights, and writes per-query units for PQ16, PQ32 and TurboQuant-style codes at 2 and 4 bits.
+- `r4_m1a_analysis.py` computes the registered endpoints and decisions (`RESULTS/r4/m1a/analysis/`).
+- `r4_m1a_haystack.py` repeats the probe on the haystacks' cross-script groups (`RESULTS/r4/m1a/haystack/`).
+
+### 16. Numbers, tables and figures of the paper
+
+```
+python paper_numbers/ledger.py
+python paper_figures/tables.py
+python paper_figures/tables_r3.py
+python paper_figures/tables_r4.py
+python paper_figures/fig_e1.py
+python paper_figures/fig_e1_dist.py
+python paper_figures/fig_family.py
+python paper_figures/fig_scale.py
+python paper_figures/fig_a2.py
+python paper_figures/fig_m7.py
+python paper_figures/fig_rerank.py
+python paper_figures/fig_thresholds.py
+python paper_figures/fig_e6.py
+python paper_figures/fig_lcfc.py
+python paper_figures/fig_price.py
+python paper_figures/fig_cert.py
+```
+
+`ledger.py` (with `ledger_r3.py`) computes every number of the paper from `RESULTS/` (including `RESULTS/poln/` and `RESULTS/r4/`), the two diagnostics, a few
+`DATA/` info files and the haystack constants of `CODE/build_haystack.py`, and writes `paper_output/results_ledger.csv` (value, rounding, source file and claim of each number)
+and `paper_output/generated/results.tex` (one LaTeX macro per number). The table scripts write LaTeX tables to
+`paper_output/generated/`; the figure scripts write PDF figures to `paper_output/figures/` and PNG previews to
+`paper_output/figure_png/`.

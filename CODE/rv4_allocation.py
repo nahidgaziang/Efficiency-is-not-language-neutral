@@ -46,7 +46,7 @@ def allocate(cal, langs, ubudget):
 def main():
     variants = (sys.argv[sys.argv.index("--variants") + 1] if "--variants" in sys.argv else "labeled,labelfree").split(",")
     os.makedirs(OUT, exist_ok=True)
-    S = {"registration": "EXPERIMENT_PLAN §25, STRENGTHENING_PLAN_20261019.md RV4"}
+    S = {"registration": "EXPERIMENT_PLAN §25, RV4"}
     for variant in variants:
         f_out = os.path.join(OUT, f"splits_{variant}.csv")
         if os.path.exists(f_out):

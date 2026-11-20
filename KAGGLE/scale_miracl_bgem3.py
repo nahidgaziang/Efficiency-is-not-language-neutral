@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, hashlib, subprocess, gzip, shutil, re
-LOCAL_TEST = os.environ.get("MISSION_KAGGLE_TEST") == "1"
+LOCAL_TEST = os.environ.get("AUDIT_KAGGLE_TEST") == "1"
 MODEL_ID = "BAAI/bge-m3"
 REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 TAG = "bgem3"
@@ -20,10 +20,10 @@ DL = "/tmp/miracl_dl"
 if LOCAL_TEST:
     MODEL_ID, REVISION, TAG, PASSAGE_PREFIX = ("intfloat/multilingual-e5-small", "614241f622f53c4eeff9890bdc4f31cfecc418b3",
                                                "e5s", "passage: ")
-    BATCH, CHUNK, CAP = 16, 64, int(os.environ.get("MISSION_KAGGLE_TEST_CAP", "40200"))
-    LANGS_RUN = os.environ.get("MISSION_KAGGLE_TEST_LANGS", "sw,yo").split(",")
-    INPUT_GLOB = os.environ["MISSION_KAGGLE_INPUT"] + "/manifest.json"
-    WORK = os.environ["MISSION_KAGGLE_WORK"]
+    BATCH, CHUNK, CAP = 16, 64, int(os.environ.get("AUDIT_KAGGLE_TEST_CAP", "40200"))
+    LANGS_RUN = os.environ.get("AUDIT_KAGGLE_TEST_LANGS", "sw,yo").split(",")
+    INPUT_GLOB = os.environ["AUDIT_KAGGLE_INPUT"] + "/manifest.json"
+    WORK = os.environ["AUDIT_KAGGLE_WORK"]
     DL = os.path.join(WORK, "_dl")
 OUT = os.path.join(WORK, "scale_" + TAG)
 os.makedirs(OUT, exist_ok=True); os.makedirs(DL, exist_ok=True)

@@ -12,7 +12,7 @@ def main():
     setup()
     g = pd.read_csv(os.path.join(RUN, "group_cell.csv"))
     cells = pd.read_csv(os.path.join(RUN, "cells.csv")).set_index(["retriever", "condition"])
-    fig, axes = figure(2.75, ncols=2, sharey=True)
+    fig, axes = figure(2.5, ncols=2, sharey=True)
     for ax, tag, name, role in ((axes[0], "e5s", "mE5-small", "exploratory"), (axes[1], "bgem3", "BGE-M3", "confirmatory")):
         d = g[(g.retriever == tag) & g.eligible]
         ax.axhspan(-1, 1, color=GRID, alpha=0.6, lw=0, zorder=0)

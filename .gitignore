@@ -9,8 +9,5 @@ __pycache__/
 KAGGLE/*.ipynb
 EXPERIMENTS/d6_queries.csv
 EXPERIMENTS/diagnostics/**/*.json
-MANUSCRIPT/results_ledger.csv
-MANUSCRIPT/paper/generated/
-MANUSCRIPT/paper/figures/
-MANUSCRIPT/paper/figure_scripts/fonts/
-MANUSCRIPT/analysis/_figpng/
+paper_output/
+paper_figures/fonts/

@@ -51,7 +51,7 @@ def main():
     new = pd.concat(frames, ignore_index=True)
     old = pd.read_parquet(os.path.join(out, "per_query_B.parquet"))
     m = new.merge(old[["group", "qid", "method", "hit1", "hit10", "top1"]], on=["group", "qid", "method"], suffixes=("", "_old"))
-    rep = {"tag": tag, "file": fname, "mission_threads": os.environ.get("MISSION_THREADS", "10 (default)"),
+    rep = {"tag": tag, "file": fname, "audit_threads": os.environ.get("AUDIT_THREADS", "10 (default)"),
            "faiss": faiss.__version__, "n_queries": int(len(Q)), "seconds": round(time.time() - t0), "methods": {}}
     for name, s in m.groupby("method"):
         rep["methods"][name] = {"rows": int(len(s)), "rows_expected": int(len(Q)),

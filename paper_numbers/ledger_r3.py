@@ -455,6 +455,364 @@ def hay(L):
     L.add_word("hayOversample")
 
 
+def poln(L):
+    import glob as _g
+    P = os.path.join(L.R, "poln")
+    src = "RESULTS/poln/impute1 (CODE/poln_tests.py)"
+    d1 = json.load(open(os.path.join(P, "impute1", "decisions.json")))
+    d2 = json.load(open(os.path.join(P, "impute2", "decisions.json")))
+    word = {"H0": "Zero", "H1": "One", "H2": "Two", "H3": "Three", "H3b": "ThreeB", "H4_trained": "FourTrained",
+            "H4_oblivious": "FourOblivious", "H5": "Five", "H6": "Six"}
+    for k, w in word.items():
+        L.add(f"poln{w}Met", d1[k]["met"], kind="int", source=src + f"; {k}", claim="PoLN")
+        L.add(f"poln{w}Of", d1[k]["of"], kind="int", source=src + f"; {k}", claim="PoLN")
+    L.add("polnOneMetSens", d2["H1"]["met"], kind="int", source="RESULTS/poln/impute2; H1", claim="PoLN")
+    L.add("polnFiveMetSens", d2["H5"]["met"], kind="int", source="RESULTS/poln/impute2; H5", claim="PoLN")
+    C = pd.read_csv(os.path.join(P, "impute1", "cells_h1_h4.csv"))
+    C2 = pd.read_csv(os.path.join(P, "impute2", "cells_h1_h4.csv"))
+    lossy = C[C.lossy]
+    el = lossy[lossy.PoLN_unif.notna()]
+    L.add("polnLossyCells", len(lossy), kind="int", source=src + "; lossy cell-targets", claim="PoLN")
+    L.add("polnTestableCells", len(el), kind="int", source=src + "; lossy cell-targets with a finite mean budget", claim="PoLN")
+    L.add("polnTestableCensored", int((el.censored > 0).sum()), kind="int", source=src + "; testable cells with a language beyond the grid", claim="PoLN")
+    e = el[el.eps == 0.10]
+    tq, pc = e[e.layer == "tq"], e[e.layer == "pca"]
+    L.add("polnNinetyCells", len(e), kind="int", source=src + "; testable cells at target 0.90", claim="PoLN")
+    L.add("polnUnifMedNinety", e.PoLN_unif.median(), 2, source=src + "; median PoLN_unif, target 0.90", claim="PoLN")
+    L.add("polnTqModels", len(tq), kind="int", source=src + "; TurboQuant cells, target 0.90", claim="PoLN")
+    L.add("polnTqMin", tq.PoLN_unif.min(), 2, source=src + "; TurboQuant PoLN_unif min, target 0.90", claim="PoLN")
+    L.add("polnTqMax", tq.PoLN_unif.max(), 2, source=src + "; TurboQuant PoLN_unif max, target 0.90", claim="PoLN")
+    L.add("polnTqUncensored", int((tq.censored == 0).sum()), kind="int", source=src + "; TurboQuant cells without a language beyond the grid", claim="PoLN")
+    L.add("polnPcaModels", len(pc), kind="int", source=src + "; PCA cells, target 0.90", claim="PoLN")
+    L.add("polnPcaMin", pc.PoLN_unif.min(), 2, source=src + "; PCA PoLN_unif min, target 0.90", claim="PoLN")
+    L.add("polnAllocMin", e.PoLN_alloc.min(), 2, source=src + "; PoLN_alloc min, target 0.90", claim="PoLN")
+    L.add("polnAllocMax", e.PoLN_alloc.max(), 2, source=src + "; PoLN_alloc max, target 0.90", claim="PoLN")
+    L.add("polnAllocMedNinety", e.PoLN_alloc.median(), 2, source=src + "; median PoLN_alloc, target 0.90", claim="PoLN")
+    from scipy.stats import spearmanr
+    G5 = pd.read_csv(os.path.join(P, "impute1", "h5_growth.csv"))
+    met5 = {"tq": [0, 0], "pca": [0, 0]}
+    for (mdl, tb, lay), gg in G5.groupby(["model", "testbed", "layer"]):
+        gg = gg.sort_values("n")
+        if gg.PoLN_unif_median.notna().sum() < 3 or lay not in met5:
+            continue
+        grows = spearmanr(gg.n, gg.PoLN_unif_median, nan_policy="omit").statistic > 0
+        a10, aall = gg[gg.n == 10].PoLN_alloc_median.iloc[0], gg.PoLN_alloc_median.iloc[-1]
+        met5[lay][0] += int(grows and abs(a10 - aall) < 0.05)
+        met5[lay][1] += 1
+    assert met5["tq"][0] + met5["pca"][0] == d1["H5"]["met"] and met5["tq"][1] + met5["pca"][1] == d1["H5"]["of"]
+    L.add("polnFiveTqMet", met5["tq"][0], kind="int", source=src + "; H5 rule on h5_growth.csv, TurboQuant cells", claim="PoLN")
+    L.add("polnFiveTqOf", met5["tq"][1], kind="int", source=src + "; H5 cells, TurboQuant", claim="PoLN")
+    L.add("polnFivePcaMet", met5["pca"][0], kind="int", source=src + "; H5 rule on h5_growth.csv, PCA cells", claim="PoLN")
+    L.add("polnFivePcaOf", met5["pca"][1], kind="int", source=src + "; H5 cells, PCA", claim="PoLN")
+    q4 = C[(C.model == "qwen3e4b_ep") & (C.layer == "tq") & (C.eps == 0.10)]
+    assert len(q4) == 1 and not bool(q4.lossy.iloc[0])
+    for k, col in (("polnQwenFourTq", "PoLN_unif"), ("polnQwenFourTqLo", "PoLN_unif_lo"), ("polnQwenFourTqHi", "PoLN_unif_hi")):
+        L.add(k, q4[col].iloc[0], 2, source=src + "; Qwen3-Emb-4B TurboQuant, target 0.90: mean meets the target at the smallest budget, so the price is a lower bound; " + col, claim="PoLN")
+    ex = tq[tq.censored == 0]
+    assert len(ex) == 1
+    L.add("polnExactUnif", ex.PoLN_unif.iloc[0], 2, source=src + "; PoLN_unif of the TurboQuant cell without a language beyond the grid (" + ex.model.iloc[0] + "), target 0.90", claim="PoLN")
+    L.add("polnExactAlloc", ex.PoLN_alloc.iloc[0], 2, source=src + "; PoLN_alloc of the TurboQuant cell without a language beyond the grid (" + ex.model.iloc[0] + "), target 0.90", claim="PoLN")
+    s2 = C2[C2.lossy & (C2.eps == 0.10)]
+    L.add("polnUnifMedNinetySens", s2.PoLN_unif.median(), 2, source="RESULTS/poln/impute2; median PoLN_unif, target 0.90", claim="PoLN")
+    L.add("polnAllocMedNinetySens", s2.PoLN_alloc.median(), 2, source="RESULTS/poln/impute2; median PoLN_alloc, target 0.90", claim="PoLN")
+    pq = C[(C.layer == "pq") & (C.eps == 0.10)]
+    L.add("polnPqModels", len(pq), kind="int", source=src + "; PQ cells, target 0.90", claim="PoLN")
+    L.add("polnPqMeanReached", int((pq.B_mean < float("inf")).sum()), kind="int", source=src + "; PQ cells whose mean reaches 0.90 within 64 B", claim="PoLN")
+    L.add("polnPqCensMin", int(pq.censored.min()), kind="int", source=src + "; PQ languages beyond 64 B, min over models", claim="PoLN")
+    L.add("polnPqCensMax", int(pq.censored.max()), kind="int", source=src + "; PQ languages beyond 64 B, max over models", claim="PoLN")
+    L.add("polnLangs", int(C.n_lang.max()), kind="int", source=src + "; languages per cell", claim="PoLN")
+    h3 = C[C.law_n.notna()].copy()
+    h3["met"] = (h3.law_rho >= 0.7) & (h3.law_rho_lo >= 0.5)
+    for lay, w in (("tq", "Tq"), ("pca", "Pca"), ("pq", "Pq"), ("pq_rscale", "Rs")):
+        g = h3[h3.layer == lay]
+        L.add(f"polnLaw{w}Met", int(g.met.sum()), kind="int", source=src + f"; H3 cells meeting the rule, {lay}", claim="PoLN")
+        L.add(f"polnLaw{w}Cells", len(g), kind="int", source=src + f"; H3 cells, {lay}", claim="PoLN")
+        L.add(f"polnLaw{w}Rho", g.law_rho.median(), 2, source=src + f"; H3 median Spearman rho, {lay}", claim="PoLN")
+    H6 = pd.read_csv(os.path.join(P, "impute1", "h6_compute.csv"))
+    L.add("polnSixGroups", len(H6), kind="int", source=src + "; LCFC knob and test-bed groups", claim="PoLN")
+    L.add("polnSixBelowUnif", int((H6.median_vs_uniform < 1).sum()), kind="int", source=src + "; groups with median cost below the uniform worst case", claim="PoLN")
+    L.add("polnSixUnifMin", H6.median_vs_uniform.min(), 3, source=src + "; min over groups of median cost(LCFC)/cost(uniform)", claim="PoLN")
+    L.add("polnSixUnifMax", H6.median_vs_uniform.max(), 2, source=src + "; max over groups of median cost(LCFC)/cost(uniform)", claim="PoLN")
+    infos = [json.load(open(f)) for f in sorted(_g.glob(os.path.join(L.R, "poln", "inputs", "export_info_*.json")))]
+    checks = [v for d in infos for k, v in d["checks"].items() if not k.startswith("nullA")]
+    assert all(isinstance(v, (int, float)) for v in checks) and max(checks) <= 1e-9
+    L.add("polnExportChecks", len(checks), kind="int", source="RESULTS/poln/inputs/export_info_*.json; checks against stored per-query R@1", claim="PoLN")
+    L.add("polnExportRefits", len(checks) - len(infos), kind="int", source="RESULTS/poln/inputs/export_info_*.json; refitted layers", claim="PoLN")
+    L.add("polnExportModels", len(infos), kind="int", source="RESULTS/poln/inputs/export_info_*.json", claim="PoLN")
+
+
+def r4(L):
+    R4 = os.path.join(L.R, "r4")
+    reg = "EXPERIMENT_PLAN §27 (registered 2026-11-12 16:44:46)"
+
+    def a(key, v, d=2, kind="plain", src="", claim="R4"):
+        L.add(key, v, d, kind=kind, source=src, claim=claim)
+
+    def n(key, v, src, claim="R4"):
+        L.add(key, int(v), kind="int", source=src, claim=claim)
+
+    P = pd.read_csv(os.path.join(R4, "p1", "price_extended.csv"))
+    sp = "RESULTS/r4/p1/price_extended.csv (" + reg + ")"
+
+    def cell(model, fam, tgt):
+        r = P[(P.model == model) & (P.family == fam) & (P.target == tgt)]
+        assert len(r) == 1
+        return r.iloc[0]
+
+    t9 = P[(P.family == "tq") & (P.target == 0.9)]
+    n("rFourTqModels", len(t9), sp + "; TurboQuant-style models, target 0.90")
+    n("rFourTqNoBeyond", (t9.beyond_grid == 0).sum(), sp + "; TurboQuant-style, target 0.90, no language beyond the extended grid")
+    ex = t9[t9.lossy & t9.exact]
+    n("rFourTqExactLossy", len(ex), sp + "; TurboQuant-style, target 0.90, mean misses the target at the smallest budget and no language beyond the grid")
+    L.add_word("rFourTqExactLossy")
+    L.add_word("rFourTqModels")
+    assert ex.loc[ex.price_lower.idxmin(), "model"] == "e5s" and ex.loc[ex.price_lower.idxmax(), "model"] == "jinav5"
+    assert (ex.price_lower == ex.price_upper).all()
+    a("rFourTqMin", ex.price_lower.min(), src=sp + "; exact price, minimum (mE5-small)")
+    a("rFourTqMax", ex.price_lower.max(), src=sp + "; exact price, maximum (jina-v5-small)")
+    for key, m in (("Bgem", "bgem3"), ("Arctic", "arcticl2")):
+        r = cell(m, "tq", 0.9)
+        assert r.exact and r.lossy
+        a(f"rFourTq{key}", r.price_lower, src=sp + f"; {m}, exact")
+        a(f"rFourTq{key}Lo", r.price_lower_ci_lo, src=sp + f"; {m}, bootstrap 2.5 %")
+        a(f"rFourTq{key}Hi", r.price_lower_ci_hi, src=sp + f"; {m}, bootstrap 97.5 %")
+        a(f"rFourTq{key}Oct", r.oct_price, src=sp + f"; {m}, 28 Oct lower bound on the original grid")
+    r = cell("qwen3e4b_ep", "tq", 0.9)
+    assert r.exact and not r.lossy
+    a("rFourTqQwenFour", r.price_lower, src=sp + "; Qwen3-Emb-4B: mean meets 0.90 at the smallest budget, so a lower bound")
+    a("rFourTqQwenFourLo", r.price_lower_ci_lo, src=sp + "; Qwen3-Emb-4B, bootstrap 2.5 %")
+    a("rFourTqQwenFourHi", r.price_lower_ci_hi, src=sp + "; Qwen3-Emb-4B, bootstrap 97.5 %")
+    r = cell("minilm", "tq", 0.9)
+    assert not r.exact and r.beyond_grid == 1
+    a("rFourTqMinilmLo", r.price_lower, src=sp + "; MiniLM-L12, lower bound (language beyond the grid at 8 bits)")
+    a("rFourTqMinilmHi", r.price_upper, src=sp + "; MiniLM-L12, upper bound (that language at float storage)")
+    other = t9[~(t9.lossy & t9.exact)]
+    assert sorted(other.model) == ["minilm", "qwen3e4b_ep"]
+    a("rFourTqOtherAtLeast", float(np.floor(100 * other.price_lower.min())) / 100,
+      src=sp + "; lowest lower bound of the two models without an exact price, rounded down for an 'at least' statement")
+    n("rFourTqOther", len(other), sp + "; TurboQuant-style models at 0.90 without an exact lossy price (MiniLM-L12, Qwen3-Emb-4B)")
+    L.add_word("rFourTqOther")
+    t95 = P[(P.family == "tq") & (P.target == 0.95)]
+    e95 = t95[t95.lossy & t95.exact]
+    n("rFourTqNinetyFiveExact", len(e95), sp + "; TurboQuant-style, target 0.95, exact")
+    L.add_word("rFourTqNinetyFiveExact")
+    a("rFourTqNinetyFiveMin", e95.price_lower.min(), src=sp + "; target 0.95, exact, minimum")
+    a("rFourTqNinetyFiveMax", e95.price_lower.max(), src=sp + "; target 0.95, exact, maximum")
+    p9 = P[(P.family == "pq") & (P.target == 0.9)]
+    pe = p9[p9.lossy & p9.exact]
+    n("rFourPqExact", len(pe), sp + "; PQ, target 0.90, exact")
+    L.add_word("rFourPqExact")
+    a("rFourPqMin", pe.price_lower.min(), src=sp + "; PQ exact, minimum")
+    a("rFourPqMax", pe.price_lower.max(), src=sp + "; PQ exact, maximum")
+    pi = p9[~p9.exact & p9.price_lower.notna()]
+    n("rFourPqInterval", len(pi), sp + "; PQ, target 0.90, testable with a language beyond d/2 bytes")
+    L.add_word("rFourPqInterval")
+    a("rFourPqLowerMin", pi.price_lower.min(), src=sp + "; PQ interval cells, lowest lower bound")
+    a("rFourPqLowerMax", pi.price_lower.max(), src=sp + "; PQ interval cells, highest lower bound")
+    a("rFourPqUpperMax", pi.price_upper.max(), src=sp + "; PQ interval cells, highest upper bound")
+    nt = p9[p9.price_lower.isna()]
+    assert list(nt.model) == ["e5s"]
+    n("rFourPqUntestable", len(nt), sp + "; PQ, target 0.90, mean-tuned budget beyond the grid (mE5-small)")
+    pe95 = P[(P.family == "pq") & (P.target == 0.95) & P.exact & P.lossy]
+    assert list(pe95.model) == ["qwen3e4b_ep"]
+    n("rFourPqNinetyFiveExact", len(pe95), sp + "; PQ, target 0.95, exact (Qwen3-Emb-4B)")
+    a("rFourPqNinetyFiveQwen", pe95.price_lower.iloc[0], src=sp + "; PQ, target 0.95, Qwen3-Emb-4B")
+    a("rFourAllocTqMin", ex.price_alloc_lower.min(), src=sp + "; allocated price, TurboQuant-style exact cells, minimum")
+    a("rFourAllocTqMax", ex.price_alloc_lower.max(), src=sp + "; allocated price, TurboQuant-style exact cells, maximum")
+    a("rFourAllocTqMed", ex.price_alloc_lower.median(), src=sp + "; allocated price, TurboQuant-style exact cells, median")
+    a("rFourAllocPqMin", pe.price_alloc_lower.min(), src=sp + "; allocated price, PQ exact cells, minimum")
+    a("rFourAllocPqMax", pe.price_alloc_lower.max(), src=sp + "; allocated price, PQ exact cells, maximum")
+
+    T = os.path.join(R4, "p1", "tests")
+    dec = {k: json.load(open(os.path.join(T, k, "decisions.json"))) for k in ("tq_lower", "tq_upper", "pq_lower", "pq_upper")}
+    st = "RESULTS/r4/p1/tests/<family>_<bound>/decisions.json (28 Oct tests, thresholds unchanged, extended grid)"
+    for h, w in (("H3", "Law"), ("H2", "AllocBelow")):
+        for fam in ("tq", "pq"):
+            lo, up = dec[fam + "_lower"][h], dec[fam + "_upper"][h]
+            assert lo["met"] == up["met"] and lo["of"] == up["of"]
+    for h, w in (("H1", "Price"), ("H2", "AllocBelow"), ("H3", "Law"), ("H3b", "Transfer"), ("H5", "Growth")):
+        for fam, F in (("tq", "Tq"), ("pq", "Pq")):
+            n(f"rFour{w}{F}Met", dec[fam + "_lower"][h]["met"], st + f"; {h}, {fam}, lower bound")
+            n(f"rFour{w}{F}Of", dec[fam + "_lower"][h]["of"], st + f"; {h}, {fam}")
+            if dec[fam + "_upper"][h]["met"] != dec[fam + "_lower"][h]["met"]:
+                n(f"rFour{w}{F}UpperMet", dec[fam + "_upper"][h]["met"], st + f"; {h}, {fam}, upper bound")
+    for fam, F in (("tq", "Tq"), ("pq", "Pq")):
+        c = pd.read_csv(os.path.join(T, fam + "_lower", "cells_h1_h4.csv"))
+        h = c[c.law_n.notna()]
+        a(f"rFourLaw{F}Rho", h.law_rho.median(), src=st + f"; H3 median Spearman rho, {fam}")
+        a(f"rFourLaw{F}LoMin", h.law_rho_lo.min(), src=st + f"; H3 lowest lower interval bound, {fam}")
+
+    g = json.load(open(os.path.join(R4, "p1", "turboquant_gate_r4_converged.json")))
+    assert all(v["within_3pct"] for v in g["bits"].values()) and len(g["bits"]) == 8
+    a("rFourGateMax", 100 * max(v["rel_diff"] for v in g["bits"].values()), src="RESULTS/r4/p1/turboquant_gate_r4_converged.json; largest relative difference to Lloyd-Max over b = 1-8, percent (D-R4-1)")
+
+    C = pd.read_csv(os.path.join(R4, "p3", "cells.csv"))
+    s3 = "RESULTS/r4/p3/cells.csv (" + reg + ", R4-P3)"
+    d3 = json.load(open(os.path.join(R4, "p3", "decision.json")))
+    v3 = json.load(open(os.path.join(R4, "p3", "verify.json")))
+    assert v3["max_abs_diff"] == 0.0
+    n("rFourVerifyRows", v3["rows"], "RESULTS/r4/p3/verify.json; R3-6 rows reproduced, max |diff| 0.0")
+    cc = C[C.is_cell]
+    n("rFourCertCells", len(cc), s3 + "; cells")
+    n("rFourCertHolds", cc.holds.sum(), s3 + "; cells that hold")
+    n("rFourCertCombos", len(C), s3 + "; model-family-target combinations")
+    n("rFourCertViol", C.violating_langs_pooled.sum(), s3 + "; languages with a pooled violation, all combinations")
+    tq, pq = cc[cc.family == "tq"], cc[cc.family == "pq"]
+    n("rFourCertTqCells", len(tq), s3 + "; TurboQuant-style cells")
+    n("rFourCertTqHolds", tq.holds.sum(), s3 + "; TurboQuant-style cells that hold")
+    n("rFourCertPqCells", len(pq), s3 + "; PQ cells")
+    n("rFourCertPqHolds", pq.holds.sum(), s3 + "; PQ cells that hold")
+    th = tq[tq.holds]
+    hm = th.groupby("model").size()
+    n("rFourCertTqModels", (hm == 2).sum(), s3 + "; models whose TurboQuant-style cells hold at both targets")
+    L.add_word("rFourCertTqModels")
+    a("rFourCertTqMin", th.cert_over_mean_tuned.min(), src=s3 + "; certified / mean-tuned memory, TurboQuant-style cells that hold, minimum")
+    a("rFourCertTqMax", th.cert_over_mean_tuned.max(), src=s3 + "; same, maximum")
+    q4 = tq[tq.model == "qwen3e4b_ep"].set_index("tau")
+    assert not q4.holds.any() and set(tq[~tq.holds].model) == {"qwen3e4b_ep"}
+    a("rFourCertQwenNinety", q4.loc[0.9, "cert_over_mean_tuned"], src=s3 + "; Qwen3-Emb-4B, 0.90")
+    a("rFourCertQwenNinetyFive", q4.loc[0.95, "cert_over_mean_tuned"], src=s3 + "; Qwen3-Emb-4B, 0.95")
+    n("rFourCertTqFallbackMax", round(100 * tq.fallback_share.max()), s3 + "; largest fallback share, TurboQuant-style cells, percent")
+    assert (tq[tq.tau == 0.9].fallback_share == 0).all()
+    a("rFourCertTqUfaMin", tq.cert_over_uniform_for_all.min(), src=s3 + "; certified / uniform-for-all memory, TurboQuant-style cells, minimum")
+    a("rFourCertTqUfaMax", tq.cert_over_uniform_for_all.max(), src=s3 + "; same, maximum")
+    a("rFourCertPqMin", pq.cert_over_mean_tuned.min(), src=s3 + "; certified / mean-tuned, PQ cells, minimum")
+    a("rFourCertPqMax", pq.cert_over_mean_tuned.max(), src=s3 + "; certified / mean-tuned, PQ cells, maximum")
+    n("rFourCertPqFallbackMax", round(100 * pq.fallback_share.max()), s3 + "; largest fallback share, PQ cells, percent")
+    assert d3["status"] == "partly supported" and d3["cells_hold"] == cc.holds.sum() and d3["cells"] == len(cc)
+
+    N = pd.read_csv(os.path.join(R4, "p5", "analysis", "cells.csv"))
+    s5 = "RESULTS/r4/p5/analysis/cells.csv (" + reg + ", R4-P5)"
+    assert N.is_cell.all()
+    n("rFourNatViol", N.violating_groups_pooled.sum(), s5 + "; groups with a pooled violation")
+    hy, mi = N[N.bed == "haystack"], N[N.bed == "miracl"]
+    n("rFourHayHolds", hy.holds.sum(), s5 + "; haystack cells that hold")
+    n("rFourHayCells", len(hy), s5 + "; haystack cells")
+    n("rFourHayModels", hy.model.nunique(), s5 + "; haystack models")
+    L.add_word("rFourHayModels")
+    a("rFourHayMin", hy[hy.holds].cert_over_mean_tuned.min(), src=s5 + "; haystacks, holding cells, minimum")
+    a("rFourHayMax", hy[hy.holds].cert_over_mean_tuned.max(), src=s5 + "; haystacks, holding cells, maximum")
+    hf = hy[~hy.holds]
+    assert len(hf) == 1 and hf.model.iloc[0] == "e5s" and hf.tau.iloc[0] == 0.95
+    a("rFourHayFail", hf.cert_over_mean_tuned.iloc[0], src=s5 + "; haystacks, mE5-small at 0.95")
+    n("rFourHayFailFallback", round(100 * hf.fallback_share.iloc[0]), s5 + "; haystacks, mE5-small at 0.95, fallback percent")
+    n("rFourMirHolds", mi.holds.sum(), s5 + "; MIRACL cells that hold")
+    n("rFourMirCells", len(mi), s5 + "; MIRACL cells")
+    n("rFourMirModels", mi.model.nunique(), s5 + "; MIRACL models")
+    L.add_word("rFourMirModels")
+    a("rFourMirMin", mi.cert_over_mean_tuned.min(), src=s5 + "; MIRACL, equal shares, minimum")
+    a("rFourMirMax", mi.cert_over_mean_tuned.max(), src=s5 + "; MIRACL, equal shares, maximum")
+    a("rFourMirCorpusMin", mi.cert_over_mean_tuned_corpus_shares.min(), src=s5 + "; MIRACL, corpus shares, minimum")
+    a("rFourMirCorpusMax", mi.cert_over_mean_tuned_corpus_shares.max(), src=s5 + "; MIRACL, corpus shares, maximum")
+
+    Q = pd.read_csv(os.path.join(R4, "p2", "summary.csv"))
+    s2 = "RESULTS/r4/p2/summary.csv (R4-P2, descriptive)"
+    for fam, F in (("tq", "Tq"), ("pq", "Pq")):
+        q = Q[Q.family == fam]
+        a(f"rFourPlug{F}Min", q.alloc_over_mean_tuned.min(), src=s2 + f"; allocated / mean-tuned, {fam}, minimum")
+        a(f"rFourPlug{F}Max", q.alloc_over_mean_tuned.max(), src=s2 + f"; allocated / mean-tuned, {fam}, maximum")
+    assert (Q.langs_sig_below_tau_minus_002_median == 0).all()
+    n("rFourPlugSigMax", Q.langs_sig_below_max.max(), s2 + "; most languages significantly below tau - 0.02 in any split")
+
+    O = pd.read_csv(os.path.join(R4, "p4", "summary.csv"))
+    s4 = "RESULTS/r4/p4/summary.csv (R4-P4, descriptive; medians over splits 0-4)"
+    n("rFourPoolCells", len(O), s4 + "; model-target cells")
+    a("rFourPoolAllocMin", O.alloc_over_mean_tuned.min(), src=s4 + "; allocated / mean-tuned memory, minimum")
+    a("rFourPoolAllocMax", O.alloc_over_mean_tuned.max(), src=s4 + "; allocated / mean-tuned memory, maximum")
+    near = O.alloc_over_mean_tuned <= 1.25
+    n("rFourPoolNearMean", near.sum(), s4 + "; cells whose allocated memory is at most 1.25 times the mean-tuned memory (unrounded)")
+    out = O[~near]
+    assert len(out) == 1 and out.model.iloc[0] == "e5s" and out.tau.iloc[0] == 0.95
+    a("rFourPoolOutlier", out.alloc_over_mean_tuned.iloc[0], src=s4 + "; the cell above 1.25: mE5-small at 0.95")
+    w = O.loc[O.allocated_worst_fid.idxmin()]
+    assert w.model == "qwen3e4b_ep" and w.tau == 0.9
+    a("rFourPoolWorstMin", w.allocated_worst_fid, 3, src=s4 + "; lowest worst-language fidelity under allocation (Qwen3-Emb-4B, 0.90)")
+    n("rFourPoolWorstLangs", w.allocated_langs_below_tau_minus_002, s4 + "; languages below tau - 0.02 in that cell")
+    n("rFourPoolAllocWorse", (O.allocated_worst_fid < O.mean_tuned_worst_fid).sum(), s4 + "; cells where allocation leaves the worst language below mean tuning's worst")
+    a("rFourPoolUfaWorstMin", O.uniform_for_all_worst_fid.min(), 3, src=s4 + "; uniform-for-all, worst-language fidelity, minimum")
+    a("rFourPoolUfaMemMin", O.ufa_over_mean_tuned.min(), src=s4 + "; uniform-for-all / mean-tuned memory, minimum")
+    a("rFourPoolUfaMemMax", O.ufa_over_mean_tuned.max(), src=s4 + "; uniform-for-all / mean-tuned memory, maximum")
+
+    E = pd.read_csv(os.path.join(R4, "m1a", "analysis", "endpoints.csv"))
+    dm = json.load(open(os.path.join(R4, "m1a", "analysis", "decisions.json")))
+    sm = "RESULTS/r4/m1a/analysis/endpoints.csv (EXPERIMENT_PLAN §28 R4-M1a)"
+    assert dm["item"] == "not supported"
+    for m in ("e5s", "bgem3"):
+        assert not (dm["models"][m]["D1"] or dm["models"][m]["D2"] or dm["models"][m]["D3"])
+        assert dm["models"][m]["eligible_treated"] == ["ben_Latn", "hin_Latn"]
+
+    def ep(m, g, layer, meas, cond):
+        r = E[(E.model == m) & (E.group == g) & (E.layer == layer) & (E.measure == meas) & (E.condition == cond)]
+        assert len(r) == 1, (m, g, layer, meas, cond)
+        return r.iloc[0]
+
+    his, rights, wrongs, zsig = [], [], [], []
+    for m, M in (("e5s", "Efive"), ("bgem3", "Bgem")):
+        for g, G in (("ben_Latn", "Ben"), ("hin_Latn", "Hin")):
+            b, f = ep(m, g, "exact", "R1", "orig"), ep(m, g, "exact", "R1", "ridge_a100")
+            a(f"rFourExact{M}{G}Before", b.value, 3, src=sm + f"; {m} {g} exact R@1, original")
+            a(f"rFourExact{M}{G}After", f.value, 3, src=sm + f"; {m} {g} exact R@1, ridge map a = 1")
+            assert f.value < b.value
+            c = ep(m, g, "pq_16", "retention", "ridge_a100")
+            a(f"rFourClosure{M}{G}", c.closure, src=sm + f"; {m} {g} PQ16 closure, ridge a = 1")
+            his.append(c.closure_hi)
+            rights.append(c.closure)
+            wr = ep(m, g, "pq_16", "retention", "wrong")
+            wrongs.append(wr.closure)
+            z = ep(m, g, "pq_16", "median_z", "ridge_a100")
+            a(f"rFourMargin{M}{G}", z.closure, src=sm + f"; {m} {g} change of the median standardized margin (PQ16 seed 0)")
+            a(f"rFourMargin{M}{G}Lo", z.closure_lo, src=sm + f"; same, 2.5 %")
+            a(f"rFourMargin{M}{G}Hi", z.closure_hi, src=sm + f"; same, 97.5 %")
+            assert z.closure < 0
+            zsig.append(z.closure_hi < 0)
+        for g, G in (("ben_Latn", "Ben"), ("hin_Latn", "Hin")):
+            o, r_ = ep(m, g, "pq_16", "retention", "orig"), ep(m, g, "pq_16", "retention", "ridge_a100")
+            a(f"rFourRet{M}{G}Before", o.value, 3, src=sm + f"; {m} {g} PQ16 retention, original")
+            a(f"rFourRet{M}{G}After", r_.value, 3, src=sm + f"; {m} {g} PQ16 retention, ridge a = 1")
+            a(f"rFourRet{M}{G}Donor", o.donor_value, 3, src=sm + f"; {m} {g} donor PQ16 retention")
+        dr = [ep(m, g, "pq_16", "dose_rho", "ridge_a025..a100").value for g in ("ben_Latn", "hin_Latn")]
+        a(f"rFourDose{M}Min", min(dr), 1, src=sm + f"; {m} dose Spearman rho, deciding groups, minimum")
+        a(f"rFourDose{M}Max", max(dr), 1, src=sm + f"; {m} dose Spearman rho, deciding groups, maximum")
+        nh = E[(E.model == m) & (E.measure == "no_harm")].iloc[0]
+        a(f"rFourNoHarm{M}", nh.value, 3, src=sm + f"; {m} mean change of PQ16 retention, untreated eligible languages")
+        a(f"rFourNoHarm{M}Lo", nh.closure_lo, 3, src=sm + f"; same, 2.5 %")
+        a(f"rFourNoHarm{M}Hi", nh.closure_hi, 3, src=sm + f"; same, 97.5 %")
+    n("rFourMarginCases", len(zsig), sm + "; deciding model-group cases (ben_Latn, hin_Latn x two models); median standardized margin falls in all")
+    n("rFourMarginSig", sum(zsig), sm + "; cases whose margin-change interval lies below zero")
+    L.add_word("rFourMarginCases")
+    L.add_word("rFourMarginSig")
+    a("rFourClosureHiMax", max(his), src=sm + "; highest upper interval bound of the four deciding PQ16 closures")
+    assert max(his) < 0
+    a("rFourClosureMin", min(rights), src=sm + "; deciding PQ16 closures, minimum")
+    a("rFourClosureMax", max(rights), src=sm + "; deciding PQ16 closures, maximum")
+    a("rFourWrongMin", min(wrongs), src=sm + "; wrong-language map, deciding PQ16 closures, minimum")
+    a("rFourWrongMax", max(wrongs), src=sm + "; wrong-language map, deciding PQ16 closures, maximum")
+
+    cos = []
+    for m in ("e5s", "bgem3"):
+        mp = json.load(open(os.path.join(R4, "m1a", m, "maps.json")))["maps"]
+        for k, v in mp.items():
+            assert v["dev_cos_ridge"] > v["dev_cos_identity"]
+            cos.append((m, k, v["dev_cos_identity"], v["dev_cos_ridge"], v["train_pairs"]))
+    hb = [c for c in cos if c[0] == "bgem3" and c[1].startswith("hi|")]
+    assert len(hb) == 1
+    a("rFourDevCosBefore", hb[0][2], src="RESULTS/r4/m1a/bgem3/maps.json; hi map, development cosine without the map")
+    a("rFourDevCosAfter", hb[0][3], src="RESULTS/r4/m1a/bgem3/maps.json; hi map, development cosine with the ridge map")
+    n("rFourDakPairsMin", min(c[4] for c in cos), "RESULTS/r4/m1a/<model>/maps.json; training pairs per map, minimum")
+    n("rFourDakPairsMax", max(c[4] for c in cos), "RESULTS/r4/m1a/<model>/maps.json; training pairs per map, maximum")
+
+    H = pd.read_csv(os.path.join(R4, "m1a", "haystack", "endpoints.csv"))
+    hx = H[(H.layer == "exact") & (H.measure == "R1")].pivot_table(index=["model", "group"], columns="condition", values="mapped")
+    assert len(hx) == 6 and (hx.ridge_a100 < hx.orig).all()
+    a("rFourHayProbeExactMax", hx.orig.max(), src="RESULTS/r4/m1a/haystack/endpoints.csv; largest exact R@1 of a haystack cross-script group before the map")
+    n("rFourHayProbeGroups", len(hx), "RESULTS/r4/m1a/haystack/endpoints.csv; model-group pairs")
+
+    ms = json.load(open(os.path.join(L.R, "..", "DATA", "r4", "manifest_sentences.json"), encoding="utf-8"))
+    n("rFourDakSentences", sum(ms["candidates_by_lang_split_kind"].values()), "DATA/r4/manifest_sentences.json; Dakshina sentence pairs before exclusion")
+    n("rFourDakRemoved", ms["removed_items"], "DATA/r4/manifest_sentences.json; removed by the exclusion checks")
+    n("rFourDakLiteral", ms["literal_rule_would_also_remove"], "DATA/r4/manifest_sentences.json; removed in addition under the literal rule (D-R4-3)")
+
+
 def run(L):
-    for f in (a2, a1, s8, rv, r3, d7, d6, nb, d6judge, hay):
+    for f in (a2, a1, s8, rv, r3, d7, d6, nb, d6judge, hay, poln, r4):
         f(L)

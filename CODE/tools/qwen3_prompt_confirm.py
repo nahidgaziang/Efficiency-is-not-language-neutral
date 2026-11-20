@@ -21,4 +21,4 @@ if ok:
         f"criterion met: V4 > stored in {n_up}/18 languages, mean gain {mean_gain:.3f}\n")
     print("marker written")
 else:
-    print("criterion NOT met: no marker; report to the user")
+    print("criterion NOT met: no marker")

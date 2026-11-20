@@ -7,13 +7,13 @@ import faiss
 import compressors as C
 from rv_common import mech_fields, code_stats, rerank_scores, atomic_parquet, atomic_csv
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 KS = (10, 40, 100, 1000)
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (H-A's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (H-A's fits depend on the thread count)")
     tag = sys.argv[1]
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     tasks = arg("--tasks", "rv1,rv2,rv5b").split(",")

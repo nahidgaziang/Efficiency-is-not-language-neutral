@@ -1,7 +1,7 @@
 import os
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-THREADS = int(os.environ.get("MISSION_THREADS", "10"))
+THREADS = int(os.environ.get("AUDIT_THREADS", "10"))
 for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
     os.environ.setdefault(_v, str(THREADS))
 

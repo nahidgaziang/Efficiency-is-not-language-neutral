@@ -26,7 +26,7 @@ def main():
     setup()
     a = pd.read_csv(os.path.join(RESULTS, "scale", "bgem3", "analysis_A", "S1.csv"))
     b = pd.read_csv(os.path.join(RESULTS, "scale", "bgem3", "analysis_B", "S1.csv"))
-    fig, axes = figure(3.7, nrows=2, ncols=3)
+    fig, axes = figure(3.25, nrows=2, ncols=3)
     for ax, (m, title) in zip(axes[0], A):
         panel(ax, a[a.method == m], "level", [40000, 100000, 300000], ["40k", "100k", "300k"])
         ax.set_title(title)

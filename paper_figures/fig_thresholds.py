@@ -13,7 +13,7 @@ def pct(v, _):
 
 def main():
     setup()
-    fig, axes = figure(2.6, ncols=3, sharey=True)
+    fig, axes = figure(2.4, ncols=3, sharey=True)
     for ax, tag in zip(axes, TAGS):
         d = pd.read_csv(os.path.join(RESULTS, "haystack", tag, "thresholds_v2.csv"))
         g = d[d.method == "cos_global"].sort_values("fpr").reset_index(drop=True)

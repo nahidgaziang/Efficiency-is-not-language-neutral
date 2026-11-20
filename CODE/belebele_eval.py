@@ -6,7 +6,7 @@ import pandas as pd
 import faiss
 import compressors as C
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 
 
 def main():
@@ -154,7 +154,7 @@ def main():
     print(pd.DataFrame(ops).round(3).to_string(index=False))
     json.dump({"tag": tag, "seeds": seeds, "opq_seeds": opq_seeds, "seconds": round(time.time() - t0),
                **({"seed_list": seed_list, "opq_seed_list": opq_seed_list, "opq_budgets": opq_budgets,
-                   "pca_dims": pca_dims, "out": out, "mission_threads": os.environ.get("MISSION_THREADS", "10 (default)")}
+                   "pca_dims": pca_dims, "out": out, "audit_threads": os.environ.get("AUDIT_THREADS", "10 (default)")}
                   if any(k in sys.argv for k in ("--seed-list", "--opq-seed-list", "--out-tag", "--opq-budgets", "--pca-dims"))
                   else {})},
               open(os.path.join(out, "run_info.json"), "w"))

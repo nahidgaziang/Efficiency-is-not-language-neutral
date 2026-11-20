@@ -7,12 +7,12 @@ import faiss
 import compressors as C
 from rv_common import atomic_parquet
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (E1's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (E1's fits depend on the thread count)")
     tag = sys.argv[1]
     seeds = [int(s) for s in (sys.argv[sys.argv.index("--seeds") + 1] if "--seeds" in sys.argv else "0,1,2").split(",")]
     out = os.path.join(RESULTS, "belebele", f"{tag}_rv5", "per_query"); os.makedirs(out, exist_ok=True)

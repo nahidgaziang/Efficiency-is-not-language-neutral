@@ -10,7 +10,7 @@ from miracl_eval import metrics_from_scores
 from miracl_npz_diag import npz_member_memmap
 from turboquant import haar_rotation
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 SHARES = (0.0, 0.01, 0.05, 0.20, 0.40)
 OPQ_SHARES = (0.0, 0.05, 0.40)
 SEEDS = (0, 1, 2)

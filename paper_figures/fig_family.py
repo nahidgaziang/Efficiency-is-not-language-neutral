@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib.lines import Line2D
 from style import BLUE, ORANGE, INK, INK2, MUTED, BAND, RESULTS, figure, save, setup
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "analysis"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "paper_numbers"))
 from ledger import FAMILY_CLASSES, family_class, c1_cells
 
 LABELS = {"Pc": "product codes\n(PQ, OPQ, IVF-PQ)", "Tc": "residual and\nfast-scan codes", "Dr": "dimension reduction\n(PCA, MRL)",
@@ -18,7 +18,7 @@ def main():
     c = c1_cells()
     c["cls"] = c.family.map(family_class)
     order = [k for k, _, _ in FAMILY_CLASSES]
-    fig, ax = figure(3.25)
+    fig, ax = figure(3.0)
     rng = np.random.default_rng(0)
     for i, k in enumerate(order):
         g = c[c.cls == k]

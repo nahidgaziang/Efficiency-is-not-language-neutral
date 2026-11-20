@@ -22,8 +22,8 @@ def ndcg_from_ids(I, pids, qkeys, qrels):
 def main():
     tag = sys.argv[1]
     want = "12" if tag == "e5s" else "4"
-    if os.environ.get("MISSION_THREADS") != want:
-        sys.exit(f"MISSION_THREADS must be {want} for {tag}")
+    if os.environ.get("AUDIT_THREADS") != want:
+        sys.exit(f"AUDIT_THREADS must be {want} for {tag}")
     faiss.omp_set_num_threads(int(want))
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else os.path.join(RESULTS, "rv5c", tag)
     os.makedirs(out, exist_ok=True)

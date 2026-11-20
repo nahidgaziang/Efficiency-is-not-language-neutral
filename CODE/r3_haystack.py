@@ -9,7 +9,7 @@ import compressors as C
 from rv_common import mech_fields, atomic_parquet
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 NS = (0, 2000, 5000, 10000, 20000)
 
 
@@ -22,8 +22,8 @@ def compare(R, ref, cols):
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (H-A's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (H-A's fits depend on the thread count)")
     tag = sys.argv[1]
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     task = arg("--task", "")

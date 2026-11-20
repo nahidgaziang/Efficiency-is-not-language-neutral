@@ -24,7 +24,7 @@ def child():
     rows, vmax = C.part_b("e5s")
     S = pd.read_csv(os.path.join(RESULTS, "null_modernq", "e5s", "summary.csv"))
     pl = pd.read_csv(os.path.join(RESULTS, "null_modernq", "e5s", "per_lang.csv"))
-    out = {"MISSION_THREADS": os.environ["MISSION_THREADS"], "blas": [(d["internal_api"], d["num_threads"]) for d in threadpool_info()],
+    out = {"AUDIT_THREADS": os.environ["AUDIT_THREADS"], "blas": [(d["internal_api"], d["num_threads"]) for d in threadpool_info()],
            "max_abs_diff": float(vmax), "stopped": stops, "seconds": round(time.time() - t0), "cells": {}}
     for r, (pt, elig), sd in zip([r for r in rows if "q_lo" in r], cap, C.SIGMA_DIFF):
         s = pl[pl.family == r["family"]].set_index("lang").loc[elig]
@@ -43,11 +43,11 @@ def parent():
         sys.exit(f"{dst} exists (no overwriting)")
     res = []
     for th in RUNS:
-        env = {k: v for k, v in os.environ.items() if k not in THREAD_VARS}; env["MISSION_THREADS"] = th; env["PYTHONIOENCODING"] = "utf-8"
+        env = {k: v for k, v in os.environ.items() if k not in THREAD_VARS}; env["AUDIT_THREADS"] = th; env["PYTHONIOENCODING"] = "utf-8"
         p = subprocess.run([sys.executable, os.path.abspath(__file__), "--child"], env=env, capture_output=True, text=True,
                            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         line = [l for l in p.stdout.splitlines() if l.startswith("{")]
-        r = json.loads(line[-1]) if line else {"MISSION_THREADS": th, "error": p.stderr[-2000:]}
+        r = json.loads(line[-1]) if line else {"AUDIT_THREADS": th, "error": p.stderr[-2000:]}
         res.append(r); print(json.dumps({k: v for k, v in r.items() if k != "cells"}),
                              {f: (c["sigma_A_diff"], c["langs_differing"]) for f, c in r.get("cells", {}).items()}, flush=True)
     json.dump({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "runs": res}, open(dst, "w"), indent=1)

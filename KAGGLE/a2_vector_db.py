@@ -46,7 +46,7 @@ for p in glob.glob(os.path.join(IN_ROOT, "**", "e2_P_fp16.npy"), recursive=True)
     d0 = os.path.dirname(p)
     if np.load(p, mmap_mode="r").shape[1] == DIM:
         cands.append(d0)
-assert len(cands) >= 1, f"the {MODEL} input dataset is not attached ({'mission-taskb-inputs' if MODEL == 'bgem3' else 'mission-scale-e5s-inputs'})"
+assert len(cands) >= 1, f"the {MODEL} input dataset is not attached ({'audit-taskb-inputs' if MODEL == 'bgem3' else 'audit-scale-e5s-inputs'})"
 INP = cands[0]
 mf = [f for f in ("manifest.json", "taskB_e5s_manifest.json") if os.path.exists(os.path.join(INP, f))][0]
 man = json.load(open(os.path.join(INP, mf)))

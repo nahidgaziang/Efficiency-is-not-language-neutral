@@ -6,7 +6,7 @@ import pandas as pd
 import faiss
 import compressors as C
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 LAYERS = ["exact", "pq_8", "pq_16", "pq_32", "pq_64", "pq_rscale_16", "bin_gc", "int8_deq", "pca_256"]
 POOLED = {"exact", "pq_16", "pq_32", "pq_rscale_16", "bin_gc", "int8_deq", "pca_256"}
 TOPK, CHUNK = 128, 2048
@@ -27,8 +27,8 @@ def top_sets(S):
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (E1's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (E1's fits depend on the thread count)")
     tag = sys.argv[1]
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     layers = arg("--layers", ",".join(LAYERS)).split(",")

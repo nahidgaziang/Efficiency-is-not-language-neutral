@@ -7,7 +7,7 @@ import faiss
 from scipy.stats import spearmanr
 import compressors as C
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 REPS, NBOOT, MIN_LOSS, TOL = 3, 1000, 0.01, 0.002
 
 
@@ -123,7 +123,7 @@ def main():
     top_ex = {L: np.argsort(-S_ex[L], axis=1)[:, :10] for L in langs}
     aud_rows, aud_q = [], []
     ck_dir = os.path.join(out, "cells_partial"); os.makedirs(ck_dir, exist_ok=True)
-    threads = os.environ.get("MISSION_THREADS", "10 (default)")
+    threads = os.environ.get("AUDIT_THREADS", "10 (default)")
     resumed = []
 
     def save_ck(fam, bud, n_pl, n_pq):
@@ -137,7 +137,7 @@ def main():
         ck = os.path.join(ck_dir, f"{fam}_{bud}.pkl")
         if os.path.exists(ck):
             c = pickle.load(open(ck, "rb"))
-            assert c["threads"] == threads, f"checkpoint {ck} written at MISSION_THREADS {c['threads']}, now {threads}"
+            assert c["threads"] == threads, f"checkpoint {ck} written at AUDIT_THREADS {c['threads']}, now {threads}"
             aud_rows.append(c["aud_row"]); aud_q.append(c["aud_q"]); summ.append(c["row"])
             per_lang += c["per_lang"]; perq += c["perq"]; resumed.append(f"{fam}_{bud}")
             print(f"  {fam} {bud}: reused from checkpoint", flush=True)
@@ -233,7 +233,7 @@ def main():
     S = pd.DataFrame(summ)
     S.to_csv(os.path.join(out, "summary.csv"), index=False)
     json.dump({"tag": tag, "suffix": suffix, "fit_seed": fseed, "cells_option": sorted(only) if only else None,
-               "mission_threads": os.environ.get("MISSION_THREADS", "10 (default)"),
+               "audit_threads": os.environ.get("AUDIT_THREADS", "10 (default)"),
                "reps": REPS, "nboot": NBOOT, "tol": TOL, "min_loss": MIN_LOSS, "n_lang": len(langs),
                "n_elig": len(elig), "seconds": round(time.time() - t0), "cells_reused_from_checkpoint": resumed},
               open(os.path.join(out, "run_info.json"), "w"))

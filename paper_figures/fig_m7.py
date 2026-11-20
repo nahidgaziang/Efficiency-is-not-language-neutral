@@ -51,7 +51,7 @@ def main():
     setup()
     c = pd.read_csv(os.path.join(RESULTS, "assurance", "c10", "cells.csv"))
     a, b = rows(c, "A", TRAINED), rows(c, "B", OBLIVIOUS)
-    h = 0.165 * max(len(a), len(b)) + 1.0
+    h = 0.145 * max(len(a), len(b)) + 0.95
     fig, (ax1, ax2) = figure(h, ncols=2, sharex=True)
     draw(ax1, a, "trained product quantizers")
     draw(ax2, b, "data-oblivious quantizers")

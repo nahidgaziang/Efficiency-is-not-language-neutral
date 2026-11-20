@@ -1,7 +1,7 @@
 import os, sys, json
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, "..", "MANUSCRIPT", "analysis"))
+sys.path.insert(0, os.path.join(HERE, "..", "paper_numbers"))
 from common import RESULTS
 import numpy as np
 import pandas as pd

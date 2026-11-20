@@ -10,7 +10,7 @@ import compressors as C
 from rv_common import atomic_parquet
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 M, ITERS, KMIN, KMAX, EXPO = 16, 5, 0.25, 4.0, -0.5
 
 
@@ -85,8 +85,8 @@ def haystack(tag):
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (E1's and H-A's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (E1's and H-A's fits depend on the thread count)")
     tb, tag = sys.argv[1], sys.argv[2]
     arg = lambda k, d: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d
     only = arg("--groups", "")

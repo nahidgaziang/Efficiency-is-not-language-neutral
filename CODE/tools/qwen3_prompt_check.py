@@ -11,7 +11,7 @@ from scipy.stats import skew
 from transformers import AutoTokenizer, AutoModel
 from miracl_npz_diag import npz_member_memmap, ndcg10, topk
 
-torch.set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+torch.set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 BELEBELE_REV = "7899cdfa4e1e0d733fd77c848e2c273cb1d32be2"
 
 

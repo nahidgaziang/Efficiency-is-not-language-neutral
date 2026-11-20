@@ -9,9 +9,9 @@ while header and not header[-1].strip():
     header.pop()
 RUNNER = r'''import os, sys, subprocess, time
 T0 = time.time()
-print("mode: " + ("SMOKE TEST (gate units of bn and en only; input mission-d6-inputs only)" if SMOKE else
-                  "JUDGE RERUN (judge only, 18 gate units, seeds 20261020; input mission-d6-inputs only)" if JUDGE_RERUN else
-                  "REAL RUN (all units; inputs mission-d6-inputs and both generation outputs)"), flush=True)
+print("mode: " + ("SMOKE TEST (gate units of bn and en only; input audit-d6-inputs only)" if SMOKE else
+                  "JUDGE RERUN (judge only, 18 gate units, seeds 20261020; input audit-d6-inputs only)" if JUDGE_RERUN else
+                  "REAL RUN (all units; inputs audit-d6-inputs and both generation outputs)"), flush=True)
 def run(cmd):
     r = subprocess.run(cmd, capture_output=True, text=True)
     print(f"{' '.join(cmd[2:5])}: rc {r.returncode} {r.stderr[-300:]}", flush=True)

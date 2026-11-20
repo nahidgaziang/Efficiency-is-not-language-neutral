@@ -3,10 +3,10 @@ import pandas as pd
 from numpy.lib import format as npf
 from style import MODEL_NAMES, PROJ, RESULTS
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "analysis"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "paper_numbers"))
 from ledger import c1_cells, truncation_table
 
-GEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "generated")
+GEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "paper_output", "generated")
 EMB = os.path.join(PROJ, "DATA", "emb")
 TAGS = ["e5s", "minilm", "bgem3", "qwen3e_ep", "qwen3e4b_ep", "arcticl2", "egemma", "jinav5"]
 HF = {"e5s": "intfloat/multilingual-e5-small", "minilm": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -220,7 +220,7 @@ def tab_layers():
     pca_dims = f"{int(pk.min())}--{int(pk.max())}"
     tq, rb = ["tq1", "tq2", "tq4"], ["rabitq1", "rabitq2", "rabitq4"]
     rows = [
-        ("PQ \\citep{jegou2011pq}", "$m$ sub-quantizers of 8 bits, $m$ bytes", bel_b("pq"), mh_list("pq")),
+        ("PQ \\citep{jegou2011pq}", "$m$ sub-quantizers of 8 bits, $m$ bytes; extended grid also $d/8$, $d/4$, $d/2$", bel_b("pq"), mh_list("pq")),
         ("OPQ \\citep{ge2014opq}", "learned rotation, then PQ", bel_b("opq"), mh_list("opq")),
         ("PQ, OPQ with residual scaling", "per-language mean and spread removed before one shared codebook", bel_b("pq_rscale"), mh_list("pq", "_rscale")),
         ("IVF-PQ", "coarse quantizer with 1,024 lists, PQ of the residual", "--", mh_list("ivfpq")),
@@ -228,7 +228,7 @@ def tab_layers():
         ("Binary", "sign of each dimension, $d/8$ bytes: raw, globally centered, per-language centered", "all three", "raw, globally centered; centered with exact rescoring of the top 40"),
         ("PCA", "projection to $k$ dimensions, float32", f"$k$ = {pca_dims}", "$k$ = " + mh_list("pca")),
         ("MRL prefix", "first $k$ dimensions, for models trained for it", f"{bel_n('mrl')} models", "--"),
-        ("TurboQuant-style \\citep{turboquant2025}", "random rotation and scalar MSE quantizer, $b \\in \\{1, 2, 4\\}$ bits per dimension; data-oblivious", mod_range(tq, "belebele"), mod_range(tq, "miracl")),
+        ("TurboQuant-style \\citep{turboquant2025}", "random rotation and scalar MSE quantizer, $b \\in \\{1, 2, 4\\}$ bits per dimension (extended grid: 1--6, 8); data-oblivious", mod_range(tq, "belebele"), mod_range(tq, "miracl")),
         ("RaBitQ \\citep{rabitq2024,rabitqext2025}", "random rotation, $b \\in \\{1, 2, 4\\}$ bits per dimension; 1-bit codes also with oversampled exact rescoring", mod_range(rb, "belebele"), mod_range(rb, "miracl")),
         ("Residual quantizer", "stages of 8 bits", mod_b("rq", "belebele"), mod_b("rq", "miracl")),
         ("PQ fast-scan", "$d/2$ sub-quantizers of 4 bits", mod_b("pqfs", "belebele"), mod_b("pqfs", "miracl")),

@@ -47,7 +47,7 @@ if not (INP and SCALE):
             print("  " * depth + root, f"({len(files)} files)", flush=True)
             for f in sorted(files)[:12]:
                 print("  " * depth + "   ", f, os.path.getsize(os.path.join(root, f)), flush=True)
-assert INP, "mission-taskb-inputs not attached (e2_P_fp16.npy not found); see the listing of /kaggle/input above"
+assert INP, "audit-taskb-inputs not attached (e2_P_fp16.npy not found); see the listing of /kaggle/input above"
 assert SCALE, "scale_bgem3 output not attached (vec_ar.npy not found); see the listing of /kaggle/input above"
 log(f"inputs {INP}; scale {SCALE}; previous run {PREV}")
 

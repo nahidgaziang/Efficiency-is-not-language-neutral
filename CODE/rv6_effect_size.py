@@ -1,7 +1,7 @@
 import os, sys, glob, json, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, "..", "MANUSCRIPT", "analysis"))
+sys.path.insert(0, os.path.join(HERE, "..", "paper_numbers"))
 from common import RESULTS, EMB
 import numpy as np
 import pandas as pd
@@ -183,7 +183,7 @@ def main():
         sys.exit(f"{OUT}/summary.json exists (no overwriting)")
     os.makedirs(OUT, exist_ok=True)
     t0 = time.time()
-    S = {"registration": "EXPERIMENT_PLAN §25, STRENGTHENING_PLAN_20261019.md RV6"}
+    S = {"registration": "EXPERIMENT_PLAN §25, RV6"}
     data = loaders() if set(parts) & {"a", "b", "c", "f"} else None
     if set(parts) & {"a", "b", "c"}:
         S["abc"] = part_abc(data); print(json.dumps(S["abc"]), flush=True)

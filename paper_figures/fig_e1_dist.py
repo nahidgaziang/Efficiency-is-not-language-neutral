@@ -29,7 +29,7 @@ def romanized(langs):
 
 def main():
     setup()
-    fig, ax = figure(3.3)
+    fig, ax = figure(3.05)
     rng = np.random.default_rng(0)
     for i, tag in enumerate(TAGS):
         r, c = per_language(tag)
@@ -44,7 +44,7 @@ def main():
         ax.plot([c.mean_ret, c.mean_ret], [y - 0.34, y + 0.34], color=BLUE, lw=1.6, zorder=4)
         ax.scatter([c.worst_ret], [y], s=30, facecolor=ORANGE if c.worst_lang in rom else INK2, edgecolor=INK, lw=0.6, zorder=5)
         ax.annotate(c.worst_lang, (c.worst_ret, y), xytext=(0, 8), textcoords="offset points", ha="center",
-                    fontsize=6.8, color=INK, zorder=5)
+                    fontsize=7.0, color=INK, zorder=5)
     ax.set_yticks(range(len(TAGS))); ax.set_yticklabels([MODEL_NAMES[t] for t in TAGS][::-1])
     ax.set_ylim(-0.6, len(TAGS) - 0.25)
     ax.set_xlim(0, 1.06); ax.set_xticks(np.arange(0, 1.01, 0.1))

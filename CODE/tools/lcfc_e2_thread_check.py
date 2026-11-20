@@ -11,7 +11,7 @@ def child():
     import compressors as C
     from share_intervention import load
     from miracl_eval import metrics_from_scores
-    th = int(os.environ["MISSION_THREADS"]); faiss.omp_set_num_threads(th)
+    th = int(os.environ["AUDIT_THREADS"]); faiss.omp_set_num_threads(th)
     P, Q, p_lang, p_id, q_lang, q_id, qrels = load("e5s")
     tr = np.random.default_rng(0).choice(len(P), size=100000, replace=False)
     o = np.argsort(tr, kind="stable"); T = np.empty((len(tr), P.shape[1]), np.float32); T[o] = np.asarray(P[tr[o]], dtype=np.float32)
@@ -32,7 +32,7 @@ def main():
     from common import RESULTS
     out = {"threads": {}, "logical_cpus": os.cpu_count(), "time_start": time.strftime("%Y-%m-%d %H:%M:%S")}
     for th in (12, 6, 4):
-        env = {k: v for k, v in os.environ.items() if k not in THREAD_VARS}; env["MISSION_THREADS"] = str(th)
+        env = {k: v for k, v in os.environ.items() if k not in THREAD_VARS}; env["AUDIT_THREADS"] = str(th)
         p = subprocess.run([sys.executable, os.path.abspath(__file__), "--child"], env=env, capture_output=True, text=True)
         if p.returncode != 0:
             sys.exit(f"child with {th} threads failed:\n{p.stderr[-2000:]}")

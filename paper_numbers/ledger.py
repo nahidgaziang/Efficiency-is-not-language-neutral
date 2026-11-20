@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROJ = os.path.abspath(os.path.join(HERE, "..", ".."))
+PROJ = os.path.abspath(os.path.join(HERE, ".."))
 R = os.path.join(PROJ, "RESULTS")
 D = os.path.join(PROJ, "DATA")
-OUT_CSV = os.path.join(HERE, "..", "results_ledger.csv")
-OUT_TEX = os.path.join(HERE, "..", "paper", "generated", "results.tex")
+OUT_CSV = os.path.join(PROJ, "paper_output", "results_ledger.csv")
+OUT_TEX = os.path.join(PROJ, "paper_output", "generated", "results.tex")
 
 ROWS = []
 _cache = {}
@@ -1050,6 +1050,7 @@ def main():
     import ledger_r3
     ledger_r3.run(sys.modules[__name__])
     keys = [r["key"] for r in ROWS]
+    os.makedirs(os.path.dirname(OUT_CSV), exist_ok=True)
     with open(OUT_CSV, "w", encoding="utf-8", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["key", "value", "decimals", "kind", "source", "claim", "note"])
         w.writeheader(); w.writerows(ROWS)

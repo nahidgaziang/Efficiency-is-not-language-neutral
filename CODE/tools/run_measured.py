@@ -1,7 +1,7 @@
 import os, sys, time, subprocess, psutil
 logf = sys.argv[1]; cmd = sys.argv[sys.argv.index("--") + 1:]
 env = {k: v for k, v in os.environ.items() if k not in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS")}
-env.setdefault("MISSION_THREADS", "4"); env["PYTHONIOENCODING"] = "utf-8"
+env.setdefault("AUDIT_THREADS", "4"); env["PYTHONIOENCODING"] = "utf-8"
 t0 = time.time(); peak_ws = peak_priv = 0
 with open(logf, "a", encoding="utf-8") as out:
     out.write(f"=== {time.strftime('%Y-%m-%d %H:%M:%S')} {' '.join(cmd)}\n"); out.flush()

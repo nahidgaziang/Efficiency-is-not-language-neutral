@@ -284,8 +284,8 @@ def gate_reference(tag, testbed, name, d):
 
 
 def run_vendor(vendor):
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (the registered fits use 4 threads)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (the registered fits use 4 threads)")
     faiss.omp_set_num_threads(4)
     gate_tag = arg("--gate-tag", None) if vendor == "gate" else None
     src = arg("--src", os.path.join(EMB, "api", vendor))

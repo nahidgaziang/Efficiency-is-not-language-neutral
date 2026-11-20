@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, hashlib, subprocess, gzip, shutil, re
-LOCAL_TEST = os.environ.get("MISSION_KAGGLE_TEST") == "1"
+LOCAL_TEST = os.environ.get("AUDIT_KAGGLE_TEST") == "1"
 MODEL_ID = "intfloat/multilingual-e5-small"
 REVISION = "614241f622f53c4eeff9890bdc4f31cfecc418b3"
 TAG = "e5s"
@@ -22,12 +22,12 @@ ENC_LIMIT = None
 N_VERIFY_USED = None
 if LOCAL_TEST:
     BATCH, CHUNK = 16, 64
-    LANGS_RUN = os.environ.get("MISSION_KAGGLE_TEST_LANGS", "yo,sw").split(",")
-    INPUT_GLOB = os.environ["MISSION_KAGGLE_INPUT"] + "/scale_e5s_manifest.json"
-    SAMPLE_GLOB = os.environ.get("MISSION_KAGGLE_SAMPLES", "") + "/sample_{L}.parquet"
-    WORK = os.environ["MISSION_KAGGLE_WORK"]
+    LANGS_RUN = os.environ.get("AUDIT_KAGGLE_TEST_LANGS", "yo,sw").split(",")
+    INPUT_GLOB = os.environ["AUDIT_KAGGLE_INPUT"] + "/scale_e5s_manifest.json"
+    SAMPLE_GLOB = os.environ.get("AUDIT_KAGGLE_SAMPLES", "") + "/sample_{L}.parquet"
+    WORK = os.environ["AUDIT_KAGGLE_WORK"]
     DL = os.path.join(WORK, "_dl")
-    ENC_LIMIT = int(os.environ.get("MISSION_KAGGLE_TEST_ROWS", "500"))
+    ENC_LIMIT = int(os.environ.get("AUDIT_KAGGLE_TEST_ROWS", "500"))
     N_VERIFY_USED = 72
 OUT = os.path.join(WORK, "scale_" + TAG)
 os.makedirs(OUT, exist_ok=True); os.makedirs(DL, exist_ok=True)

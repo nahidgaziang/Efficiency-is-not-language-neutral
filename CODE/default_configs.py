@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import faiss
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 B = 1000
 
 

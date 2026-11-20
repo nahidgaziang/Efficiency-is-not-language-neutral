@@ -6,7 +6,7 @@ import numpy as np
 import faiss
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 for tag in ("e5s", "bgem3", "qwen3e_ep"):
     f = os.path.join(RESULTS, "modernq", tag, "miracl", "rq_mse_check.json")
     if os.path.exists(f):
@@ -21,5 +21,5 @@ for tag in ("e5s", "bgem3", "qwen3e_ep"):
         sub = T[:5000]
         mse[M] = float(np.mean(np.sum((ix.sa_decode(ix.sa_encode(sub)) - sub) ** 2, axis=1)))
     res = {"tag": tag, "mse_M16": mse[16], "mse_M32": mse[32], "decreases": mse[32] < mse[16],
-           "mission_threads": os.environ.get("MISSION_THREADS", "4"), "seconds": round(time.time() - t0)}
+           "audit_threads": os.environ.get("AUDIT_THREADS", "4"), "seconds": round(time.time() - t0)}
     json.dump(res, open(f, "w"), indent=1); print(res, flush=True)

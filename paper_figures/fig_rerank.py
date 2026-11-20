@@ -9,7 +9,7 @@ SERIES = [("pq", 32, "-", "o", "PQ32"), ("opq", 16, "--", "s", "OPQ16")]
 
 def main():
     setup()
-    fig, axes = figure(2.45, ncols=4, sharey=True)
+    fig, axes = figure(2.3, ncols=4, sharey=True)
     for ax, tag in zip(axes, TAGS):
         d = pd.read_csv(os.path.join(RESULTS, "rerank", tag, "summary.csv"))
         ks = sorted(d.k.unique())

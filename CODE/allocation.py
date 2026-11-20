@@ -6,7 +6,7 @@ import pandas as pd
 import faiss
 from miracl_eval import load
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 EFS = [16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024]
 
 

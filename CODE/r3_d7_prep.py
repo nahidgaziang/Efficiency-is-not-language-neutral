@@ -9,14 +9,14 @@ import faiss
 import compressors as C
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 TAG, REV = "bgem3", "7899cdfa4e1e0d733fd77c848e2c273cb1d32be2"
 CONDS = ["exact", "pq16", "opq16", "pca64", "bin_gc", "bin_gc_rescore40"]
 
 
 def main():
-    if os.environ.get("MISSION_THREADS") != "4":
-        sys.exit("MISSION_THREADS must be 4 (H-A's fits depend on the thread count)")
+    if os.environ.get("AUDIT_THREADS") != "4":
+        sys.exit("AUDIT_THREADS must be 4 (H-A's fits depend on the thread count)")
     arg = lambda k, dflt: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else dflt
     out = arg("--out", os.path.join(RESULTS, "r3", "d7")); os.makedirs(out, exist_ok=True)
     kin = arg("--kaggle-out", os.path.join(ROOT, "KAGGLE", "inputs_d7"))

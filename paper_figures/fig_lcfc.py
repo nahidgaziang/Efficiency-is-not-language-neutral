@@ -16,7 +16,7 @@ def main():
     c = pd.read_csv(os.path.join(RESULTS, "lcfc", "report", "cell_settings.csv"))
     c["group"] = c.ds + "|" + c.knob
     groups = [g for g in LABELS if g in set(c.group)]
-    fig, (ax, bx) = figure(3.15, ncols=2, sharey=True, gridspec_kw={"width_ratios": [1.15, 1]})
+    fig, (ax, bx) = figure(3.0, ncols=2, sharey=True, gridspec_kw={"width_ratios": [1.15, 1]})
     y = np.arange(len(groups))
     h = 0.27
     for j, (m, _, col) in enumerate(METHODS):
@@ -26,9 +26,9 @@ def main():
         for yi, s in zip(yy, share):
             if s == 0:
                 ax.plot(0, yi, marker="D", color=col, ms=3.6, clip_on=False, zorder=4)
-                ax.text(2.5, yi, "0", va="center", fontsize=6.5, color=INK2)
+                ax.text(2.5, yi, "0", va="center", fontsize=7.0, color=INK2)
             else:
-                ax.text(s + 1.5, yi, f"{s:.0f}", va="center", fontsize=6.5, color=INK2)
+                ax.text(s + 1.5, yi, f"{s:.0f}", va="center", fontsize=7.0, color=INK2)
     ax.set_yticks(y); ax.set_yticklabels([LABELS[g] for g in groups])
     ax.invert_yaxis()
     ax.set_xlim(0, 112); ax.set_xticks([0, 25, 50, 75, 100])

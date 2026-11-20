@@ -8,7 +8,7 @@ from scipy.stats import spearmanr
 import compressors as C
 from miracl_eval import load, metrics_from_scores
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 STORED_THREADS = {"e5s": "10", "bgem3": "4", "minilm": "4", "qwen3e": "4", "qwen3e_ep": "4"}
 JITTER = {"bin_raw": 1.0, "bin_gc": 1.0}
 
@@ -53,7 +53,7 @@ def main():
                 reps[m] = (lambda f: lambda q, p: (q, f(p)))(methods[m])
         if smoke:
             reps = {m: reps[m] for m in ("pq16", "pca64")}
-        same_threads = STORED_THREADS.get(tag) == os.environ.get("MISSION_THREADS", "10")
+        same_threads = STORED_THREADS.get(tag) == os.environ.get("AUDIT_THREADS", "10")
         nd_ex, _, _ = metrics_from_scores(Sx, pids, qkeys, qrels)
         rows.append(pd.DataFrame({"lang": L, "qid": [q for _, q in qkeys], "method": "exact", "agree1": 1.0,
                                   "overlap10": 1.0, "gap_fp": gap, "ndcg10": nd_ex}))
@@ -118,7 +118,7 @@ def main():
     Tt["RG_decision"] = np.where((Tt.rho_gap <= -0.7) & (Tt.gap_hi <= -0.5) & (Tt.worst10_recall_gap >= 0.7),
                                  "gap predicts damaged languages", "criterion not met")
     Tt.to_csv(os.path.join(out, "labelfree_tests.csv"), index=False)
-    json.dump({"tag": tag, "mission_threads": os.environ.get("MISSION_THREADS", "10 (default)"), "verification_max_diff": checks,
+    json.dump({"tag": tag, "audit_threads": os.environ.get("AUDIT_THREADS", "10 (default)"), "verification_max_diff": checks,
                "n_elig": len(elig), "seconds": round(time.time() - t0), "status": "complete"},
               open(os.path.join(out, "labelfree_run_info.json"), "w"), indent=1)
     pd.set_option("display.width", 250)

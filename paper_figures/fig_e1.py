@@ -8,7 +8,7 @@ TAGS = ["e5s", "minilm", "bgem3_allseeds", "qwen3e_ep_allseeds", "qwen3e4b_ep", 
 
 def main():
     setup()
-    fig, axes = figure(3.55, nrows=2, ncols=4, sharex=True, sharey=True)
+    fig, axes = figure(3.2, nrows=2, ncols=4, sharex=True, sharey=True)
     for ax, tag in zip(axes.flat, TAGS):
         d = pd.read_csv(os.path.join(RESULTS, "stats", f"belebele_{tag}_retention_ci.csv"))
         for fam, ls, mk in (("pq", "-", "o"), ("opq", "--", "s")):

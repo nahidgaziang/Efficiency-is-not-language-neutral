@@ -17,7 +17,7 @@ TASKS = ("BelebeleRetrieval", "MIRACLRetrievalHardNegatives")
 def get(url, tries=4, timeout=120):
     for k in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "mission-audit"}), timeout=timeout) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "per-language-audit"}), timeout=timeout) as r:
                 return r.read()
         except Exception as e:
             print(f"  retry {k + 1}: {e}", flush=True); time.sleep(10)

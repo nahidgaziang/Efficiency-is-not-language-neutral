@@ -40,7 +40,7 @@ def tab_a1():
                                    ("binary, rescored, $k=100$", "bin_rescore100", None), ("256 dimensions", "float_256", None),
                                    ("512 dimensions", "float_512", None)]),
               ("Our layers on the vendor's full-precision vectors", [
-                  ("256 dimensions, cut and renormalized", None, "trunc_local_256"), ("1024 dimensions, cut and renormalized", None, "trunc_local_1024"),
+                  ("256 dimensions, cut and renormalized", None, "trunc_local_256"), ("1,024 dimensions, cut and renormalized", None, "trunc_local_1024"),
                   ("PQ16", "pq16", "pq16"), ("PQ32", "pq32", "pq32"), ("OPQ16", "opq16", "opq16"),
                   ("int8, dequantized", "int8_deq", "int8_deq"), ("binary, centered", "bin_gc", "bin_gc"),
                   ("RaBitQ 1-bit, rescored, $o=3$", "rabitq1_rs3", "rabitq1_rs3"), ("RaBitQ 1-bit, rescored, $o=10$", "rabitq1_rs10", "rabitq1_rs10")])]
@@ -70,7 +70,7 @@ def tab_d7():
     S = json.load(open(os.path.join(RESULTS, "r3", "d7", "summary.json"), encoding="utf-8"))
     e6 = pd.read_csv(os.path.join(RESULTS, "rag_analysis", "e6_v2_20261015", "cells.csv"))
     e6 = e6[e6.retriever == "bgem3"].set_index("condition")
-    runs = [("Qwen2.5-1.5B, laptop (E6)", "1", e6), ]
+    runs = [("Qwen2.5-1.5B, original study", "1", e6), ]
     for name, label, k in (("qwen_k1", "Qwen2.5-1.5B, T4", "1"), ("qwen_k3", "Qwen2.5-1.5B, T4", "3"),
                            ("llama_k1", "Llama-3.2-3B, T4", "1"), ("llama_k3", "Llama-3.2-3B, T4", "3")):
         runs.append((label, k, pd.DataFrame(S["runs"][name]["cells"]).set_index("condition")))
@@ -83,7 +83,7 @@ def tab_d7():
         dmg = "/".join(str(int(c.loc[x, "E6c_damaged_bh"])) for x in ("pq16", "opq16", "pca64"))
         rows.append(f"{label} & {k} & {int(c.eligible_groups.iloc[0])} & {rho(c, 'pq16')} & {rho(c, 'opq16')} & {rho(c, 'pca64')} & "
                     f"{int(c.E6a_survives_holm.sum())} of {int(c.E6a_testable.sum())} & {int(c.E6b_averages_hide_worst.sum())} of {len(c)} & {dmg} \\\\")
-        if label.endswith("(E6)"):
+        if label.endswith("original study"):
             rows.append("\\addlinespace")
     body = ("\\begin{tabular}{@{}lcrcccccc@{}}\n\\toprule\n"
             " & & & \\multicolumn{3}{c}{$\\rho$ [lower bound]} & & & \\\\\n\\cmidrule(lr){4-6}\n"

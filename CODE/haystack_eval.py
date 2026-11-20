@@ -7,7 +7,7 @@ import faiss
 from scipy.stats import spearmanr
 import compressors as C
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "10")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "10")))
 
 
 def groups_of(q_lang, q_target):

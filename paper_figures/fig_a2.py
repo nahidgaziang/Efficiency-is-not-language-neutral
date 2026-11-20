@@ -11,7 +11,7 @@ XMIN = 0.80
 def main():
     setup()
     S = pd.read_csv(os.path.join(RESULTS, "r3", "a2", "settings.csv"))
-    fig, axes = figure(2.75, ncols=2, sharey=True)
+    fig, axes = figure(2.5, ncols=2, sharey=True)
     for ax, (m, title) in zip(axes, (("e5s", "mE5-small"), ("bgem3", "BGE-M3"))):
         g = S[S.model == m]
         ax.axvspan(0.95, 1.012, color=BAND, lw=0, zorder=0)

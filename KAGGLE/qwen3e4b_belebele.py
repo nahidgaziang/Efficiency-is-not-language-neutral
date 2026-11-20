@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, hashlib, subprocess
-LOCAL_TEST = os.environ.get("MISSION_KAGGLE_TEST") == "1"
+LOCAL_TEST = os.environ.get("AUDIT_KAGGLE_TEST") == "1"
 MODEL_ID = "Qwen/Qwen3-Embedding-4B"
 REVISION = "5cf2132abc99cad020ac570b19d031efec650f2b"
 TAG = "qwen3e4b"
@@ -13,14 +13,14 @@ CHUNK = 4096
 INPUT_GLOB = "/kaggle/input/**/manifest.json"
 WORK = "/kaggle/working"
 if LOCAL_TEST:
-    if os.environ.get("MISSION_KAGGLE_TEST_MODEL") == "e5s":
+    if os.environ.get("AUDIT_KAGGLE_TEST_MODEL") == "e5s":
         MODEL_ID, REVISION, TAG = "intfloat/multilingual-e5-small", "614241f622f53c4eeff9890bdc4f31cfecc418b3", "e5s_kaggletest"
         QUERY_PREFIX, PASSAGE_PREFIX = "query: ", "passage: "
     else:
         MODEL_ID, REVISION, TAG = "Qwen/Qwen3-Embedding-0.6B", "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3", "qwen3e_kaggletest"
     DTYPE, BATCH, CHUNK = "float32", 8, 64
-    INPUT_GLOB = os.environ["MISSION_KAGGLE_INPUT"] + "/manifest.json"
-    WORK = os.environ["MISSION_KAGGLE_WORK"]
+    INPUT_GLOB = os.environ["AUDIT_KAGGLE_INPUT"] + "/manifest.json"
+    WORK = os.environ["AUDIT_KAGGLE_WORK"]
 OUT = os.path.join(WORK, TAG)
 os.makedirs(OUT, exist_ok=True)
 print("model", MODEL_ID, REVISION[:10], "| dtype", DTYPE, "| local test", LOCAL_TEST)

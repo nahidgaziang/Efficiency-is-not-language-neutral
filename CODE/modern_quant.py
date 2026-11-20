@@ -8,7 +8,7 @@ import faiss
 from turboquant import TurboQuantMSE, haar_rotation
 from miracl_npz_diag import npz_member_memmap
 
-faiss.omp_set_num_threads(int(os.environ.get("MISSION_THREADS", "4")))
+faiss.omp_set_num_threads(int(os.environ.get("AUDIT_THREADS", "4")))
 SEEDS = (0, 1, 2)
 COLS = ["lang", "family", "budget_bytes", "seed", "R1_exact", "R1"]
 
